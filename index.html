@@ -1,4 +1,4 @@
-html
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1716,16 +1716,17 @@ html
         return res.trim() + ' Rupees Only';
       }
 
-      const NT_LOGO_SVG = `<div class="flex items-center gap-1.5 shrink-0">
-        <svg class="w-8 h-8 text-slate-700" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="18" cy="18" r="10" stroke-dasharray="3 2"/>
-          <path d="M11 25L25 11M13 11l2 2M21 21l2 2" stroke-width="2.5" stroke-linecap="round"/>
+      const NT_LOGO_SVG = `<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <svg width="32" height="32" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="18" cy="18" r="10" stroke="#334155" stroke-width="2.2" stroke-dasharray="3 2"/>
+          <path d="M11 25L25 11M13 11l2 2M21 21l2 2" stroke="#334155" stroke-width="2.5" stroke-linecap="round"/>
         </svg>
-        <span class="text-2xl font-black tracking-tighter text-slate-700">NT</span>
+        <span style="font-size:24px;font-weight:900;letter-spacing:-0.05em;color:#334155;line-height:1;">NT</span>
       </div>`;
 
-      const QR_SVG = `<svg class="w-16 h-16 border border-slate-300 p-0.5 bg-white shrink-0" viewBox="0 0 32 32" fill="currentColor">
-        <path d="M2 2h10v10H2V2zm2 2v6h6V4H4zm2 2h2v2H6V6zM20 2h10v10H20V2zm2 2v6h6V4h-6zm2 2h2v2h-2V6zM2 20h10v10H2V20zm2 2v6h6v-6H4zm2 2h2v2H6v-2zM14 4h2v2h-2V4zm2 2h2v2h-2V6zm-2 4h2v2h-2v-2zm4 0h2v4h-2v-4zm-4 4h4v2h-4v-2zm6 2h2v2h-2v-2zm4-2h2v2h-2v-2zm2 2h2v4h-2v-4zm-6 2h2v4h-2v-4zm4 2h4v2h-4v-2zm-8 2h2v2h-2v-2zm-2 2h2v4h-2v-4zm4 2h2v4h-2v-4zm4 0h2v2h-2v-2zm2 2h4v2h-4v-2zm2-4h2v2h-2v-2z"/>
+      const QR_SVG = `<svg width="64" height="64" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="border:1px solid #cbd5e1;padding:2px;background:#ffffff;flex-shrink:0;display:block;">
+        <rect width="32" height="32" fill="#ffffff"/>
+        <path fill="#0f172a" d="M2 2h10v10H2V2zm2 2v6h6V4H4zm2 2h2v2H6V6zM20 2h10v10H20V2zm2 2v6h6V4h-6zm2 2h2v2h-2V6zM2 20h10v10H2V20zm2 2v6h6v-6H4zm2 2h2v2H6v-2zM14 4h2v2h-2V4zm2 2h2v2h-2V6zm-2 4h2v2h-2v-2zm4 0h2v4h-2v-4zm-4 4h4v2h-4v-2zm6 2h2v2h-2v-2zm4-2h2v2h-2v-2zm2 2h2v4h-2v-4zm-6 2h2v4h-2v-4zm4 2h4v2h-4v-2zm-8 2h2v2h-2v-2zm-2 2h2v4h-2v-4zm4 2h2v4h-2v-4zm4 0h2v2h-2v-2zm2 2h4v2h-4v-2zm2-4h2v2h-2v-2z"/>
       </svg>`;
 
       function buildInvoiceHtml(bill, s, layout) {
@@ -1971,19 +1972,13 @@ html
                 <table class="w-full text-[10px] border-collapse">
                   <thead>
                     <tr class="bg-slate-200 border-b border-slate-900 text-slate-900 font-bold">
-                      <th class="py-1 px-2 border-r border-slate-900 text-center" rowspan="2">HSN/SAC</th>
-                      <th class="py-1 px-2 border-r border-slate-900 text-center" rowspan="2">Taxable Value</th>
+                      <th class="py-1.5 px-2 border-r border-slate-900 text-center">HSN/SAC</th>
+                      <th class="py-1.5 px-2 border-r border-slate-900 text-center">Taxable Value</th>
                       ${s.taxMode === 'igst'
-                        ? `<th class="py-1 px-2 border-r border-slate-900 text-center" colspan="2">IGST</th>`
-                        : `<th class="py-1 px-2 border-r border-slate-900 text-center" colspan="2">CGST</th>
-                           <th class="py-1 px-2 border-r border-slate-900 text-center" colspan="2">SGST</th>`}
-                      <th class="py-1 px-2 text-center" rowspan="2">Total Tax Amount</th>
-                    </tr>
-                    <tr class="bg-slate-200 border-b border-slate-900 text-slate-900 font-bold">
-                      ${s.taxMode === 'igst'
-                        ? `<th class="py-0.5 px-2 border-r border-slate-900 text-center">Rate</th><th class="py-0.5 px-2 border-r border-slate-900 text-center">Amount</th>`
-                        : `<th class="py-0.5 px-2 border-r border-slate-900 text-center">Rate</th><th class="py-0.5 px-2 border-r border-slate-900 text-center">Amount</th>
-                           <th class="py-0.5 px-2 border-r border-slate-900 text-center">Rate</th><th class="py-0.5 px-2 border-r border-slate-900 text-center">Amount</th>`}
+                        ? `<th class="py-1.5 px-2 border-r border-slate-900 text-center">IGST Rate</th><th class="py-1.5 px-2 border-r border-slate-900 text-center">IGST Amt</th>`
+                        : `<th class="py-1.5 px-2 border-r border-slate-900 text-center">CGST Rate</th><th class="py-1.5 px-2 border-r border-slate-900 text-center">CGST Amt</th>
+                           <th class="py-1.5 px-2 border-r border-slate-900 text-center">SGST Rate</th><th class="py-1.5 px-2 border-r border-slate-900 text-center">SGST Amt</th>`}
+                      <th class="py-1.5 px-2 text-center">Total Tax Amount</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-slate-200">
@@ -3175,30 +3170,53 @@ html
 
       // Invoice Download PDF, Print & WA
       document.getElementById('invoice-pdf-btn').addEventListener('click', () => {
-        const el = document.getElementById('invoice-print-body');
-        const bill = state.bills.find(b => b.id === currentPrintBillId);
-        const safeNum = (bill ? bill.number : 'Invoice').replace(/[^A-Za-z0-9_-]/g, '-');
+        const bill = state.bills.find(b => String(b.id) === String(currentPrintBillId));
+        if (!bill) return;
+        const safeNum = (bill.number || 'Invoice').replace(/[^A-Za-z0-9_-]/g, '-');
         const filename = `Nobel-Tools-${safeNum}.pdf`;
         const btn = document.getElementById('invoice-pdf-btn');
+
+        // Determine currently selected layout in modal
+        const activeLayoutBtn = document.querySelector('.modal-layout-btn.bg-brand-600');
+        const layout = (activeLayoutBtn && activeLayoutBtn.dataset.modalLayout) || state.settings.invoiceLayout || 'classic';
 
         if (typeof html2pdf !== 'undefined') {
           btn.disabled = true;
           btn.textContent = 'Generating PDF...';
+
+          // Force exact A4 desktop layout (never mobile-stacked) inside a fixed 760px off-screen wrapper
+          const rawInvoiceHtml = buildInvoiceHtml(bill, state.settings, layout)
+            .replace(/grid-cols-1 sm:grid-cols-2/g, 'grid-cols-2')
+            .replace(/grid-cols-1 sm:grid-cols-3/g, 'grid-cols-3')
+            .replace(/flex-col sm:flex-row/g, 'flex-row')
+            .replace(/sm:items-start/g, 'items-start')
+            .replace(/sm:min-w-\[250px\]/g, 'min-w-[250px]')
+            .replace(/sm:border-r/g, 'border-r')
+            .replace(/sm:text-right/g, 'text-right');
+
+          const a4Wrap = document.createElement('div');
+          a4Wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:760px;background:#ffffff;padding:20px;z-index:-1;';
+          a4Wrap.innerHTML = rawInvoiceHtml;
+          document.body.appendChild(a4Wrap);
+
           const opt = {
-            margin: 8,
+            margin: [8, 8, 8, 8],
             filename,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 794 },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 760, windowWidth: 1024 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
           };
-          html2pdf().set(opt).from(el).save().then(() => {
+
+          html2pdf().set(opt).from(a4Wrap).save().then(() => {
+            a4Wrap.remove();
             btn.disabled = false;
             btn.textContent = 'Download PDF';
             showToast(`Downloaded ${filename}!`);
           }).catch(() => {
+            a4Wrap.remove();
             btn.disabled = false;
             btn.textContent = 'Download PDF';
-            showToast('PDF library failed; opening print dialog...', 'warning');
+            showToast('PDF generation failed; opening print dialog...', 'warning');
             try { window.print(); } catch (e) {}
           });
         } else {
