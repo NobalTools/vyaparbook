@@ -1,2 +1,2020 @@
-# vyaparbook
-VyaparBook
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#4f39c9" />
+  <title>Nobel Tools — Billing & Inventory App</title>
+  <!-- Tailwind CSS for responsive mobile-first & desktop layout -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Clean A4 invoice print formatting without blocking screen UI */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #invoice-print-modal,
+      #invoice-print-modal * {
+        visibility: visible;
+      }
+      #invoice-print-modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row overflow-x-hidden bg-slate-50">
+
+  <!-- Non-blocking Toast Banner -->
+  <div id="toast-container" class="fixed top-4 right-4 z-[120] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 md:px-0"></div>
+
+  <!-- =========================================================
+       DESKTOP SIDEBAR NAVIGATION
+       ========================================================= -->
+  <aside class="hidden md:flex md:w-64 lg:w-72 bg-slate-900 text-white flex-col shrink-0 min-h-screen sticky top-0 h-screen select-none z-20">
+    <!-- Brand Header with Custom SVG Logo -->
+    <div class="p-5 border-b border-slate-800 flex items-center gap-3">
+      <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shrink-0 p-2">
+        <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+          <rect x="6" y="4" width="24" height="28" rx="4" fill="white" fill-opacity="0.18" stroke="white" stroke-width="2.2"/>
+          <path d="M12 12H24M12 18H20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="24" cy="25" r="5" fill="#34d399"/>
+          <path d="M22 25L23.5 26.5L26.5 23.5" stroke="#064e3b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="min-w-0">
+        <h1 id="sidebar-biz-name" class="font-bold text-base truncate">Nobel Tools</h1>
+        <p id="sidebar-biz-gst" class="text-xs text-slate-400 truncate">GSTIN: 24AABCN1429B1Z5</p>
+      </div>
+    </div>
+
+    <!-- Primary Bill Action -->
+    <div class="p-4 space-y-2 border-b border-slate-800">
+      <button type="button" onclick="openBillModal('SALE')" class="w-full py-2.5 px-4 bg-[#4f39c9] hover:bg-[#412db5] active:scale-[0.99] text-white font-semibold rounded-xl shadow-md flex items-center justify-center gap-2 transition cursor-pointer">
+        <span>+ Bill / Invoice</span>
+      </button>
+      <button type="button" onclick="openBillModal('PURCHASE')" class="w-full py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs rounded-xl border border-slate-700 flex items-center justify-center gap-1.5 transition cursor-pointer">
+        <span>+ Purchase Bill</span>
+      </button>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+      <button type="button" onclick="switchTab('dashboard')" data-nav="dashboard" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-left bg-indigo-600/15 text-indigo-300 border border-indigo-500/30 cursor-pointer">
+        <span>Dashboard</span>
+      </button>
+      <button type="button" onclick="switchTab('parties')" data-nav="parties" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/70 transition text-left cursor-pointer">
+        <span>Parties</span>
+      </button>
+      <button type="button" onclick="switchTab('items')" data-nav="items" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/70 transition text-left cursor-pointer">
+        <span>Items</span>
+      </button>
+      <button type="button" onclick="switchTab('foryou')" data-nav="foryou" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/70 transition text-left cursor-pointer">
+        <span>For You</span>
+      </button>
+      <button type="button" onclick="switchTab('more')" data-nav="more" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/70 transition text-left cursor-pointer">
+        <span>More</span>
+      </button>
+    </nav>
+
+    <div class="p-4 m-3 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs text-slate-400">
+      <div class="flex items-center gap-2 text-emerald-400 font-semibold mb-1">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>Saved Locally (localStorage)</span>
+      </div>
+      <p>Export CSV/JSON anytime or sync with Google Sheets.</p>
+    </div>
+  </aside>
+
+  <!-- =========================================================
+       MOBILE TOP HEADER WITH CUSTOM SVG LOGO
+       ========================================================= -->
+  <header class="md:hidden sticky top-0 z-30 bg-white text-slate-900 px-4 py-3 flex items-center justify-between border-b border-slate-200/80">
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="w-10 h-10 rounded-full border-2 border-indigo-700 bg-indigo-50 flex items-center justify-center shrink-0 p-1.5">
+        <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+          <path d="M12 7L15 10L18 6L21 10L24 7L22.5 12H13.5L12 7Z" fill="#4338ca"/>
+          <circle cx="18" cy="21" r="8" fill="#4338ca"/>
+          <text x="18" y="23.8" text-anchor="middle" fill="#ffffff" font-size="7.5" font-weight="800" font-family="Inter, sans-serif">NT</text>
+        </svg>
+      </div>
+      <div class="min-w-0">
+        <h1 id="mobile-biz-name" class="font-bold text-lg text-slate-900 truncate leading-tight">Nobel Tools</h1>
+      </div>
+    </div>
+    <button type="button" onclick="switchTab('more')" aria-label="Open More Options" class="p-2 text-slate-700 hover:bg-slate-100 rounded-full cursor-pointer">
+      <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="5" r="1.9" fill="currentColor"/>
+        <circle cx="12" cy="12" r="1.9" fill="currentColor"/>
+        <circle cx="12" cy="19" r="1.9" fill="currentColor"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- =========================================================
+       MAIN CONTENT AREA
+       ========================================================= -->
+  <main class="flex-1 min-w-0 p-4 md:p-6 lg:p-8 max-w-5xl mx-auto w-full pb-44 md:pb-12">
+
+    <!-- ==================== TAB 1: DASHBOARD ==================== -->
+    <section id="tab-dashboard" class="tab-section space-y-4">
+      <!-- Brand Header Card -->
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-2xs">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0 p-1.5">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <rect x="4" y="16" width="6" height="12" rx="1.5" fill="#4f46e5"/>
+              <rect x="13" y="10" width="6" height="18" rx="1.5" fill="#6366f1"/>
+              <rect x="22" y="5" width="6" height="23" rx="1.5" fill="#10b981"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Nobel Tools Dashboard</p>
+            <p id="dash-biz-subtitle" class="text-sm font-bold text-slate-900 truncate">Billing & Inventory Overview</p>
+          </div>
+        </div>
+        <button type="button" onclick="openBillModal('SALE')" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#4f39c9] hover:bg-[#412db5] text-white text-xs font-bold rounded-xl cursor-pointer">
+          <span>+ Bill / Invoice</span>
+        </button>
+      </div>
+
+      <!-- Summary Metric Cards -->
+      <div class="grid grid-cols-2 gap-3">
+        <div onclick="switchTab('parties')" class="bg-[#eefaf1] border border-[#b7e4c7] shadow-2xs p-3.5 md:p-4 rounded-xl flex items-center justify-between cursor-pointer hover:brightness-[0.99] transition">
+          <div>
+            <p id="stat-to-collect" class="text-base md:text-lg font-extrabold text-slate-900">₹ 5.81 L</p>
+            <p class="text-xs font-semibold text-[#15803d] mt-1">To Collect ↓</p>
+          </div>
+          <span class="text-[#15803d] font-bold text-lg">›</span>
+        </div>
+
+        <div onclick="switchTab('parties')" class="bg-[#fdf2f2] border border-[#f5c2c7] shadow-2xs p-3.5 md:p-4 rounded-xl flex items-center justify-between cursor-pointer hover:brightness-[0.99] transition">
+          <div>
+            <p id="stat-to-pay" class="text-base md:text-lg font-extrabold text-slate-900">₹ 47.26 L</p>
+            <p class="text-xs font-semibold text-[#dc2626] mt-1">To Pay ↑</p>
+          </div>
+          <span class="text-[#dc2626] font-bold text-lg">›</span>
+        </div>
+
+        <div onclick="switchTab('items')" class="bg-white border border-slate-200/90 shadow-2xs p-3.5 md:p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-indigo-300 transition">
+          <div>
+            <p class="text-sm md:text-base font-bold text-slate-900">Stock Value</p>
+            <p id="stat-stock-value" class="text-xs text-slate-500 mt-1">Value of Items</p>
+          </div>
+          <span class="text-slate-400 font-bold text-lg">›</span>
+        </div>
+
+        <div onclick="switchTab('more')" class="bg-white border border-slate-200/90 shadow-2xs p-3.5 md:p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-indigo-300 transition">
+          <div>
+            <p id="stat-week-sale" class="text-base md:text-lg font-extrabold text-slate-900">₹ 0</p>
+            <p class="text-xs text-slate-500 mt-1">This week's sale</p>
+          </div>
+          <span class="text-slate-400 font-bold text-lg">›</span>
+        </div>
+
+        <div onclick="switchTab('more')" class="bg-white border border-slate-200/90 shadow-2xs p-3.5 md:p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-indigo-300 transition">
+          <div>
+            <p class="text-sm md:text-base font-bold text-slate-900">Total Balance</p>
+            <p id="stat-total-balance" class="text-xs text-slate-500 mt-1">Cash + Bank Balance</p>
+          </div>
+          <span class="text-slate-400 font-bold text-lg">›</span>
+        </div>
+
+        <div onclick="switchTab('more')" class="bg-white border border-slate-200/90 shadow-2xs p-3.5 md:p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-indigo-300 transition">
+          <div>
+            <p class="text-sm md:text-base font-bold text-slate-900">Reports</p>
+            <p class="text-xs text-slate-500 mt-1">Sales, Party, GST...</p>
+          </div>
+          <span class="text-slate-400 font-bold text-lg">›</span>
+        </div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="pt-1">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-bold text-base text-slate-800">Recent Transactions</h3>
+          <button type="button" onclick="switchTab('more')" class="text-xs font-bold text-[#4f39c9] hover:underline cursor-pointer">
+            VIEW ALL ›
+          </button>
+        </div>
+        <div id="dashboard-recent-list" class="space-y-3"></div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: PARTIES ==================== -->
+    <section id="tab-parties" class="tab-section hidden space-y-4">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-2xs">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0 p-1.5">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <circle cx="12" cy="11" r="4.5" fill="#4f46e5"/>
+              <path d="M4.5 24.5C4.5 20.6 7.9 18 12 18C16.1 18 19.5 20.6 19.5 24.5" stroke="#4f46e5" stroke-width="2.4" stroke-linecap="round"/>
+              <circle cx="22.5" cy="12" r="3.5" fill="#10b981"/>
+              <path d="M18.5 24C19 21 21 19 23.5 19C25.8 19 27.5 20.8 27.5 24" stroke="#10b981" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-lg md:text-xl font-bold text-slate-900">Parties</h2>
+            <p class="text-xs text-slate-500">Tap any party to view their bill history</p>
+          </div>
+        </div>
+        <button type="button" onclick="openPartyModal()" class="px-3.5 py-2 bg-[#4f39c9] hover:bg-[#412db5] text-white text-xs font-bold rounded-xl cursor-pointer shrink-0">
+          + Add Party
+        </button>
+      </div>
+
+      <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row gap-2.5">
+        <input id="party-search" oninput="renderParties()" type="text" placeholder="Search party by name or phone..." class="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        <div class="flex bg-slate-100 p-1 rounded-xl shrink-0">
+          <button type="button" onclick="setPartyFilter('ALL')" id="pfilter-ALL" class="party-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-900 shadow-xs cursor-pointer">All</button>
+          <button type="button" onclick="setPartyFilter('CUSTOMER')" id="pfilter-CUSTOMER" class="party-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 cursor-pointer">Customers</button>
+          <button type="button" onclick="setPartyFilter('SUPPLIER')" id="pfilter-SUPPLIER" class="party-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 cursor-pointer">Suppliers</button>
+        </div>
+      </div>
+
+      <div id="parties-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+    </section>
+
+    <!-- ==================== TAB 3: ITEMS / INVENTORY ==================== -->
+    <section id="tab-items" class="tab-section hidden space-y-4">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-2xs">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0 p-1.5">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <rect x="5" y="5" width="9" height="9" rx="2" fill="#4f39c9"/>
+              <rect x="18" y="5" width="9" height="9" rx="2" fill="#4f39c9"/>
+              <rect x="11.5" y="18" width="9" height="9" rx="2" fill="#4f39c9"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-lg md:text-xl font-bold text-slate-900">Items</h2>
+            <p class="text-xs text-slate-500">Tap any item card or sliders icon to edit</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Pills Row -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <button type="button" onclick="toggleLowStockPill()" id="pill-low-stock" class="px-3.5 py-2 rounded-full text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:border-indigo-400 transition shrink-0 cursor-pointer">
+          Low Stock
+        </button>
+        <select id="item-category-filter" onchange="renderItems()" class="px-3.5 py-2 rounded-full text-xs font-semibold border border-slate-300 bg-white text-slate-700 focus:outline-none focus:border-indigo-500 shrink-0 cursor-pointer">
+          <option value="ALL">Select Category</option>
+          <option value="PCS">PCS</option>
+          <option value="BOX">BOX</option>
+          <option value="NOS">NOS</option>
+          <option value="KG">KG</option>
+          <option value="MTR">MTR</option>
+          <option value="SET">SET</option>
+        </select>
+        <button type="button" onclick="cycleItemSort()" id="pill-filter-by" class="px-3.5 py-2 rounded-full text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:border-indigo-400 inline-flex items-center gap-1.5 transition shrink-0 cursor-pointer">
+          <span>Filter By</span>
+          <svg viewBox="0 0 20 20" fill="none" class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 5H17M6 10H14M9 15H11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Search Input -->
+      <div class="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-2xs">
+        <input id="item-search" oninput="renderItems()" type="text" placeholder="Search item name or HSN code..." class="w-full px-2.5 py-1 bg-transparent text-sm focus:outline-none" />
+        <input id="item-low-stock-only" type="checkbox" class="hidden" />
+      </div>
+
+      <!-- Items List Cards -->
+      <div id="items-cards-list" class="space-y-3"></div>
+
+      <!-- Create New Item & Bulk Action Buttons -->
+      <div class="pt-2 flex flex-wrap items-center justify-center gap-3">
+        <button type="button" onclick="openItemModal()" class="px-5 py-3 rounded-full bg-[#4f39c9] hover:bg-[#412db5] active:scale-95 text-white font-semibold text-sm shadow-md inline-flex items-center gap-2 transition cursor-pointer">
+          <span>+ Create New Item</span>
+        </button>
+        <button type="button" onclick="exportCSV('items')" class="px-5 py-3 rounded-full bg-[#1e293b] hover:bg-[#0f172a] active:scale-95 text-white font-semibold text-sm shadow-md inline-flex items-center gap-2 transition cursor-pointer">
+          <span>↑ Bulk Action</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: FOR YOU (BILLS & REPORTS) ==================== -->
+    <section id="tab-foryou" class="tab-section hidden space-y-4">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-2xs">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0 p-1.5">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <rect x="7" y="4" width="18" height="24" rx="3" stroke="#7c3aed" stroke-width="2.4"/>
+              <path d="M11.5 11H20.5M11.5 16H20.5M11.5 21H16.5" stroke="#7c3aed" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-lg md:text-xl font-bold text-slate-900">For You • Bills & Reports</h2>
+            <p class="text-xs text-slate-500">Tap any bill to print A4 invoice or share on WhatsApp</p>
+          </div>
+        </div>
+        <button type="button" onclick="openBillModal('SALE')" class="px-3.5 py-2 bg-[#4f39c9] hover:bg-[#412db5] text-white text-xs font-bold rounded-xl cursor-pointer">
+          + Bill
+        </button>
+      </div>
+
+      <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row gap-2.5">
+        <input id="invoice-search" oninput="renderInvoices()" type="text" placeholder="Search by Invoice # or Party Name..." class="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        <div class="flex bg-slate-100 p-1 rounded-xl shrink-0">
+          <button type="button" onclick="setInvoiceFilter('ALL')" id="ifilter-ALL" class="inv-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-900 shadow-xs cursor-pointer">All</button>
+          <button type="button" onclick="setInvoiceFilter('SALE')" id="ifilter-SALE" class="inv-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 cursor-pointer">Sales</button>
+          <button type="button" onclick="setInvoiceFilter('PURCHASE')" id="ifilter-PURCHASE" class="inv-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 cursor-pointer">Purchases</button>
+        </div>
+      </div>
+
+      <div id="invoices-list" class="space-y-3"></div>
+    </section>
+
+    <!-- ==================== TAB 5: MORE (SETTINGS & GOOGLE SHEETS SYNC) ==================== -->
+    <section id="tab-more" class="tab-section hidden space-y-5">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex items-center gap-3 shadow-2xs">
+        <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 p-1.5">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+            <circle cx="16" cy="16" r="5" stroke="#334155" stroke-width="2.4"/>
+            <path d="M16 4V7M16 25V28M4 16H7M25 16H28M7.5 7.5L9.6 9.6M22.4 22.4L24.5 24.5M24.5 7.5L22.4 9.6M9.6 22.4L7.5 24.5" stroke="#334155" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-lg md:text-xl font-bold text-slate-900">More • Settings & Backup</h2>
+          <p class="text-xs text-slate-500">Business profile, Google Sheets sync URL & CSV/JSON backup</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <form onsubmit="saveBusinessSettings(event)" class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
+          <h3 class="font-bold text-base text-slate-900 border-b border-slate-100 pb-3">Firm / Shop Details</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Business / Shop Name *</label>
+              <input id="set-name" type="text" required class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number *</label>
+              <input id="set-phone" type="text" required class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">GSTIN (Optional)</label>
+              <input id="set-gstin" type="text" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm uppercase focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Invoice Prefix</label>
+              <input id="set-prefix" type="text" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm uppercase focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Shop Address</label>
+              <input id="set-address" type="text" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">UPI ID</label>
+              <input id="set-upi" type="text" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Bank Account Details</label>
+              <input id="set-bank" type="text" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Google Sheets Web App URL (Optional)</label>
+              <input id="set-sheets-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+          </div>
+          <div class="pt-2 flex flex-wrap justify-end gap-2">
+            <button type="button" onclick="syncToGoogleSheets()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl cursor-pointer">
+              Sync Google Sheets
+            </button>
+            <button type="submit" class="px-5 py-2.5 bg-[#4f39c9] hover:bg-[#412db5] text-white font-semibold text-sm rounded-xl cursor-pointer">
+              Save Settings
+            </button>
+          </div>
+        </form>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4 h-fit">
+          <h3 class="font-bold text-base text-slate-900 border-b border-slate-100 pb-3">Export & Backup</h3>
+          <div class="space-y-2.5">
+            <button type="button" onclick="exportCSV('invoices')" class="w-full py-2.5 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold text-xs rounded-xl cursor-pointer">
+              Download Bills CSV
+            </button>
+            <button type="button" onclick="exportCSV('items')" class="w-full py-2.5 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold text-xs rounded-xl cursor-pointer">
+              Download Items CSV
+            </button>
+            <button type="button" onclick="exportFullJSON()" class="w-full py-2.5 px-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-semibold text-xs rounded-xl cursor-pointer">
+              Export Full Backup (.JSON)
+            </button>
+            <label class="block w-full text-center py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold text-xs rounded-xl cursor-pointer">
+              Restore Backup (.JSON)
+              <input type="file" accept=".json" onchange="importFullJSON(event)" class="hidden" />
+            </label>
+          </div>
+          <div class="pt-3 border-t border-slate-100">
+            <button type="button" onclick="resetDemoData()" class="w-full py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer">
+              Reset Sample Demo Data
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================
+       MOBILE FLOATING ACTION BAR + BOTTOM NAVIGATION TABS
+       ========================================================= -->
+  <div class="md:hidden fixed bottom-16 inset-x-0 z-30 px-3.5 py-1.5 flex items-center justify-between gap-2.5 pointer-events-none">
+    <button type="button" onclick="openBillModal('PURCHASE')" class="pointer-events-auto flex-1 py-3 px-3 rounded-full bg-[#3f3f46] active:scale-95 text-white font-semibold text-xs sm:text-sm shadow-lg text-center transition cursor-pointer truncate">
+      Received Payment
+    </button>
+    <button type="button" onclick="openItemModal()" aria-label="Quick Add Item" class="pointer-events-auto w-12 h-12 rounded-full bg-[#6ab082] active:scale-95 text-white shadow-lg flex items-center justify-center shrink-0 text-2xl font-bold transition cursor-pointer">
+      +
+    </button>
+    <button type="button" onclick="openBillModal('SALE')" class="pointer-events-auto flex-1 py-3 px-3 rounded-full bg-[#4f39c9] active:scale-95 text-white font-semibold text-xs sm:text-sm shadow-lg text-center transition cursor-pointer truncate">
+      + Bill / Invoice
+    </button>
+  </div>
+
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 px-1 py-1.5 flex items-center justify-around">
+    <button type="button" onclick="switchTab('dashboard')" data-mnav="dashboard" class="mnav-btn flex flex-col items-center gap-0.5 py-1 px-2 text-[#4f39c9] font-semibold cursor-pointer">
+      <span class="text-xs font-bold">⌂</span>
+      <span class="text-[10px]">Dashboard</span>
+    </button>
+    <button type="button" onclick="switchTab('parties')" data-mnav="parties" class="mnav-btn flex flex-col items-center gap-0.5 py-1 px-2 text-slate-500 font-medium cursor-pointer">
+      <span class="text-xs font-bold">☺</span>
+      <span class="text-[10px]">Parties</span>
+    </button>
+    <button type="button" onclick="switchTab('items')" data-mnav="items" class="mnav-btn flex flex-col items-center gap-0.5 py-1 px-2 text-slate-500 font-medium cursor-pointer">
+      <span class="text-xs font-bold">▦</span>
+      <span class="text-[10px]">Items</span>
+    </button>
+    <button type="button" onclick="switchTab('foryou')" data-mnav="foryou" class="mnav-btn flex flex-col items-center gap-0.5 py-1 px-2 text-slate-500 font-medium cursor-pointer">
+      <span class="text-xs font-bold">✦</span>
+      <span class="text-[10px]">For You</span>
+    </button>
+    <button type="button" onclick="switchTab('more')" data-mnav="more" class="mnav-btn flex flex-col items-center gap-0.5 py-1 px-2 text-slate-500 font-medium cursor-pointer">
+      <span class="text-xs font-bold">•••</span>
+      <span class="text-[10px]">More</span>
+    </button>
+  </nav>
+
+  <!-- =========================================================
+       MODAL 1: CREATE SALE / PURCHASE BILL
+       ========================================================= -->
+  <div id="bill-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 overflow-y-auto">
+    <div class="min-h-screen md:p-6 flex items-center justify-center">
+      <div class="bg-white w-full max-w-4xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col min-h-screen md:min-h-0">
+        <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <h3 id="bill-modal-title" class="font-bold text-lg">Create Sale Invoice</h3>
+            <select id="bill-doc-type" onchange="onBillTypeChange()" class="bg-slate-800 text-xs font-semibold text-indigo-300 border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none">
+              <option value="SALE">Sale Invoice</option>
+              <option value="PURCHASE">Purchase Bill</option>
+            </select>
+          </div>
+          <button type="button" onclick="closeModal('bill-modal')" class="px-2.5 py-1 rounded-lg hover:bg-slate-800 text-slate-300 text-sm font-bold cursor-pointer">✕</button>
+        </div>
+
+        <form id="bill-form" onsubmit="saveBill(event)" class="p-4 md:p-6 space-y-5 flex-1 overflow-y-auto">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+            <div class="sm:col-span-2">
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-semibold text-slate-600">Select Party *</label>
+                <button type="button" onclick="openPartyModal(true)" class="text-[11px] font-bold text-indigo-600 hover:underline cursor-pointer">+ New Party</button>
+              </div>
+              <select id="bill-party" required class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Invoice / Bill No.</label>
+              <input id="bill-number" type="text" required class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Bill Date</label>
+              <input id="bill-date" type="date" required class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 px-1">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Bill Items</span>
+            <div class="flex items-center gap-3">
+              <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                <input id="bill-is-gst" type="checkbox" checked onchange="recalculateBillTotals()" class="rounded text-indigo-600" />
+                <span>GST Bill</span>
+              </label>
+              <button type="button" onclick="openItemPickerModal()" class="px-3.5 py-2 bg-[#4f39c9] hover:bg-[#412db5] text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center gap-1.5 cursor-pointer">
+                <span>+ Select Items</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[580px]">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase text-slate-500">
+                  <th class="py-2.5 px-3 w-5/12">Item</th>
+                  <th class="py-2.5 px-2 w-2/12">Qty</th>
+                  <th class="py-2.5 px-2 w-2/12">Rate (₹)</th>
+                  <th class="py-2.5 px-2 w-1/12">GST%</th>
+                  <th class="py-2.5 px-3 w-2/12 text-right">Amount</th>
+                  <th class="py-2.5 px-2"></th>
+                </tr>
+              </thead>
+              <tbody id="bill-items-rows" class="divide-y divide-slate-100 text-sm"></tbody>
+            </table>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-3">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Settlement</h4>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Mode</label>
+                  <select id="bill-payment-mode" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm">
+                    <option value="CASH">Cash</option>
+                    <option value="UPI">UPI / QR</option>
+                    <option value="BANK">Bank Transfer</option>
+                  </select>
+                </div>
+                <div>
+                  <label id="bill-paid-label" class="block text-xs font-semibold text-slate-600 mb-1">Settled Amount (₹)</label>
+                  <input id="bill-amount-paid" type="number" step="0.01" min="0" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-emerald-700" />
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 space-y-2 text-sm">
+              <div class="flex justify-between text-slate-600">
+                <span>Subtotal (Taxable):</span>
+                <span id="bill-subtotal" class="font-semibold">₹0.00</span>
+              </div>
+              <div class="flex justify-between text-slate-600">
+                <span>Total GST:</span>
+                <span id="bill-tax-total" class="font-semibold">₹0.00</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-600">
+                <span>Discount (₹):</span>
+                <input id="bill-discount" type="number" min="0" value="0" oninput="recalculateBillTotals()" class="w-24 px-2 py-1 text-right bg-white border border-slate-200 rounded-lg text-sm font-medium" />
+              </div>
+              <div class="border-t border-indigo-200/70 pt-2 flex justify-between items-center text-base font-extrabold text-slate-900">
+                <span>Grand Total:</span>
+                <span id="bill-grand-total" class="text-indigo-700 text-lg">₹0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+            <button type="button" onclick="closeModal('bill-modal')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl cursor-pointer">Cancel</button>
+            <button type="submit" class="px-6 py-2.5 bg-[#4f39c9] hover:bg-[#412db5] text-white font-bold text-sm rounded-xl shadow-md cursor-pointer">
+              Save & View Invoice
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 1B: FULL-SCREEN ITEM PICKER (myBillBook Style)
+       ========================================================= -->
+  <div id="item-picker-modal" class="fixed inset-0 z-[60] hidden bg-white flex flex-col">
+    <!-- Top Search Header -->
+    <div class="px-3 py-2.5 bg-white border-b border-slate-200/80 flex items-center gap-2.5 shrink-0">
+      <button type="button" onclick="closeModal('item-picker-modal')" aria-label="Back to Bill" class="p-2 text-[#4f39c9] hover:bg-indigo-50 rounded-full cursor-pointer shrink-0">
+        <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 12H5M5 12L11 6M5 12L11 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="flex-1 flex items-center gap-2 bg-[#f1f2f6] px-3.5 py-2 rounded-xl">
+        <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 text-slate-500 shrink-0" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+          <path d="M20 20L16.5 16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input id="picker-search" oninput="renderItemPickerList()" type="text" placeholder="Search by Item Name or HSN" class="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none" />
+      </div>
+    </div>
+
+    <!-- + Create New Item Pill Row -->
+    <div class="px-4 py-2.5 bg-white border-b border-slate-100 flex items-center justify-between shrink-0">
+      <span id="picker-mode-badge" class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sale Invoice Items</span>
+      <button type="button" onclick="openItemModal(null, true)" class="px-4 py-1.5 rounded-full bg-[#f4f3f8] hover:bg-indigo-50 text-slate-800 font-semibold text-xs inline-flex items-center gap-1.5 transition cursor-pointer">
+        <span class="text-sm font-bold">+</span>
+        <span>Create New Item</span>
+      </button>
+    </div>
+
+    <!-- Scrollable Item Cards List -->
+    <div id="picker-items-list" class="flex-1 overflow-y-auto divide-y divide-slate-100 pb-36"></div>
+
+    <!-- Sticky Bottom Summary & Generate Bill Bar -->
+    <div class="bg-white border-t border-slate-200 shadow-[0_-4px_16px_rgba(15,23,42,0.06)] shrink-0">
+      <div class="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between text-sm">
+        <span id="picker-summary-count" class="font-semibold text-slate-800">0 items</span>
+        <span id="picker-summary-total" class="font-bold text-slate-900">₹ 0</span>
+      </div>
+      <div class="px-4 py-3 flex items-center justify-between gap-3">
+        <button type="button" onclick="applyItemPickerToBill(false)" class="text-left cursor-pointer">
+          <p class="text-sm font-bold text-[#4f39c9]">Add more details</p>
+          <p class="text-[11px] text-slate-400">Party, Discount, GST, Payment...</p>
+        </button>
+        <button type="button" onclick="applyItemPickerToBill(true)" class="px-6 py-3 rounded-xl bg-[#4f39c9] hover:bg-[#412db5] active:scale-95 text-white font-bold text-sm shadow-md cursor-pointer">
+          Generate Bill
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 2: ADD PARTY
+       ========================================================= -->
+  <div id="party-modal" class="fixed inset-0 z-[70] hidden bg-slate-900/60 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+      <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <h3 class="font-bold text-base">Add New Party</h3>
+        <button type="button" onclick="closeModal('party-modal')" class="text-slate-300 hover:text-white font-bold cursor-pointer">✕</button>
+      </div>
+      <form onsubmit="saveParty(event)" class="p-5 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Party Name *</label>
+          <input id="p-name" type="text" required placeholder="e.g. Patel Hardware" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number</label>
+            <input id="p-phone" type="tel" placeholder="9876543210" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Party Type</label>
+            <select id="p-type" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm bg-white">
+              <option value="CUSTOMER">Customer</option>
+              <option value="SUPPLIER">Supplier</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">GSTIN (Optional)</label>
+          <input id="p-gstin" type="text" placeholder="24AAAAA0000A1Z5" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm uppercase" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">City / Address</label>
+          <input id="p-address" type="text" placeholder="Ring Road, Surat" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm" />
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('party-modal')" class="px-4 py-2 bg-slate-100 text-slate-700 font-semibold text-sm rounded-xl cursor-pointer">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-[#4f39c9] hover:bg-[#412db5] text-white font-semibold text-sm rounded-xl cursor-pointer">Save Party</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 3: ADD / EDIT ITEM
+       ========================================================= -->
+  <div id="item-modal" class="fixed inset-0 z-[70] hidden bg-slate-900/60 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+      <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <h3 id="item-modal-title" class="font-bold text-base">Add Stock Item</h3>
+        <button type="button" onclick="closeModal('item-modal')" class="text-slate-300 hover:text-white font-bold cursor-pointer">✕</button>
+      </div>
+      <form onsubmit="saveItem(event)" class="p-5 space-y-4">
+        <input type="hidden" id="i-id" />
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Item Name *</label>
+          <input id="i-name" type="text" required placeholder="e.g. SPANNER PD 4MM" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">HSN / SAC Code</label>
+            <input id="i-hsn" type="text" placeholder="8204" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Unit</label>
+            <select id="i-unit" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm bg-white">
+              <option value="PCS">PCS</option>
+              <option value="BOX">BOX</option>
+              <option value="NOS">NOS</option>
+              <option value="KG">KG</option>
+              <option value="MTR">MTR</option>
+              <option value="SET">SET</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Sales Price (₹) *</label>
+            <input id="i-sale-price" type="number" step="0.01" required placeholder="118" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Purchase Price (₹)</label>
+            <input id="i-purchase-price" type="number" step="0.01" placeholder="18.88" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">GST Rate (%)</label>
+            <select id="i-gst" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm bg-white">
+              <option value="0">0%</option>
+              <option value="5">5%</option>
+              <option value="12">12%</option>
+              <option value="18" selected>18%</option>
+              <option value="28">28%</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Current Stock Qty *</label>
+            <input id="i-stock" type="number" step="0.1" required value="10" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm" />
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('item-modal')" class="px-4 py-2 bg-slate-100 text-slate-700 font-semibold text-sm rounded-xl cursor-pointer">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-[#4f39c9] hover:bg-[#412db5] text-white font-semibold text-sm rounded-xl cursor-pointer">Save Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 4: PARTY BILL HISTORY MODAL
+       ========================================================= -->
+  <div id="ledger-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh]">
+      <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div>
+          <h3 id="ledger-party-name" class="font-bold text-base">Party Bills</h3>
+          <p id="ledger-party-meta" class="text-xs text-slate-400">Phone & GSTIN</p>
+        </div>
+        <button type="button" onclick="closeModal('ledger-modal')" class="text-slate-300 hover:text-white font-bold cursor-pointer">✕</button>
+      </div>
+      <div class="p-3.5 bg-slate-50 border-b border-slate-200">
+        <span class="text-xs font-bold uppercase text-slate-500" id="ledger-net-balance">CUSTOMER</span>
+      </div>
+      <div id="ledger-history-list" class="p-4 space-y-2.5 overflow-y-auto flex-1"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 5: PRINTABLE A4 INVOICE & WHATSAPP SHARE
+       ========================================================= -->
+  <div id="invoice-print-modal" class="fixed inset-0 z-50 hidden bg-slate-900/75 overflow-y-auto p-2 md:p-6">
+    <div class="max-w-3xl mx-auto space-y-3">
+      <div class="no-print bg-slate-900 text-white px-4 py-3 rounded-2xl flex flex-wrap items-center justify-between gap-2 shadow-xl">
+        <span class="text-sm font-semibold">Invoice Preview</span>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="shareInvoiceWhatsApp()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl cursor-pointer">
+            WhatsApp Share
+          </button>
+          <button type="button" onclick="window.print()" class="px-3.5 py-2 bg-[#4f39c9] hover:bg-[#412db5] text-white text-xs font-bold rounded-xl cursor-pointer">
+            Print / Save PDF
+          </button>
+          <button type="button" onclick="closeModal('invoice-print-modal')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-300 text-sm font-bold cursor-pointer">
+            ✕
+          </button>
+        </div>
+      </div>
+      <div id="printable-invoice-sheet" class="bg-white p-6 md:p-10 rounded-2xl shadow-2xl border border-slate-200 text-slate-900"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       APPLICATION JAVASCRIPT
+       ========================================================= -->
+  <script>
+    const STORAGE_KEY = 'nobel_tools_billing_v1';
+
+    const defaultData = {
+      business: {
+        name: 'Nobel Tools',
+        phone: '98250 44120',
+        gstin: '24AABCN1429B1Z5',
+        address: 'Shop 14, Industrial Market, Ring Road, Surat, Gujarat - 395002',
+        prefix: '2026-27/',
+        upi: 'nobeltools@okicici',
+        bank: 'HDFC Bank | A/C: 50200048912340 | IFSC: HDFC0000248',
+        sheetsWebhookUrl: ''
+      },
+      parties: [
+        { id: 'p0', name: 'Cash Sale', phone: '', type: 'CUSTOMER', gstin: '', address: 'Counter Cash Customer' },
+        { id: 'p1', name: 'Patel Hardware & Electricals', phone: '9879512340', type: 'CUSTOMER', gstin: '24AAHCP9123K1Z2', address: 'Varachha Road, Surat' },
+        { id: 'p2', name: 'Mahavir Agencies', phone: '9909088776', type: 'CUSTOMER', gstin: '24AABCM5512D1Z9', address: 'Adajan, Surat' },
+        { id: 'p3', name: 'Surya Tools Wholesale', phone: '9824199001', type: 'SUPPLIER', gstin: '24AAECS7741M1Z8', address: 'GIDC Pandesara, Surat' }
+      ],
+      items: [
+        { id: 'i1', name: 'SPANNER PD 4MM', hsn: '8204', unit: 'PCS', salePrice: 118, purchasePrice: 18.88, gst: 18, stock: 30.0 },
+        { id: 'i2', name: 'chain 18', hsn: '7315', unit: 'PCS', salePrice: 236, purchasePrice: 40.12, gst: 18, stock: 0.0 },
+        { id: 'i3', name: 'SCW DRIVER M', hsn: '8205', unit: 'PCS', salePrice: 0, purchasePrice: 275.00, gst: 18, stock: 10.0 },
+        { id: 'i4', name: 'DJ NTEL DJ-MC-125B MARBLE CUTTER', hsn: '8467', unit: 'PCS', salePrice: 0, purchasePrice: 767, gst: 18, stock: 12.0 },
+        { id: 'i5', name: 'HUMAC 4" GRINDING WHEEL K 10 YELLOW 4 MM', hsn: '6804', unit: 'PCS', salePrice: 59, purchasePrice: 11.80, gst: 18, stock: 770.0 }
+      ],
+      invoices: [
+        {
+          id: 'inv1',
+          number: '2026-27/1272',
+          type: 'SALE',
+          date: '2026-10-31',
+          partyId: 'p0',
+          partyName: 'Cash Sale',
+          partyPhone: '',
+          partyGstin: '',
+          partyAddress: '',
+          isGst: true,
+          items: [
+            { itemId: 'i1', name: 'SPANNER PD 4MM', hsn: '8204', unit: 'PCS', qty: 20, rate: 485, gst: 18 }
+          ],
+          subtotal: 9700,
+          taxTotal: 1746,
+          discount: 0,
+          grandTotal: 11446,
+          paidAmount: 11446,
+          paymentMode: 'CASH'
+        },
+        {
+          id: 'inv2',
+          number: '2026-27/1271',
+          type: 'SALE',
+          date: '2026-10-30',
+          partyId: 'p0',
+          partyName: 'Cash Sale',
+          partyPhone: '',
+          partyGstin: '',
+          partyAddress: '',
+          isGst: true,
+          items: [
+            { itemId: 'i2', name: 'chain 18', hsn: '7315', unit: 'PCS', qty: 10, rate: 270, gst: 18 }
+          ],
+          subtotal: 2700,
+          taxTotal: 486,
+          discount: 0,
+          grandTotal: 3186,
+          paidAmount: 3186,
+          paymentMode: 'UPI'
+        },
+        {
+          id: 'inv3',
+          number: '2026-27/1270',
+          type: 'SALE',
+          date: '2026-10-29',
+          partyId: 'p0',
+          partyName: 'Cash Sale',
+          partyPhone: '',
+          partyGstin: '',
+          partyAddress: '',
+          isGst: true,
+          items: [
+            { itemId: 'i5', name: 'HUMAC 4" GRINDING WHEEL K 10 YELLOW 4 MM', hsn: '6804', unit: 'PCS', qty: 32, rate: 59.31, gst: 18 }
+          ],
+          subtotal: 1900,
+          taxTotal: 342,
+          discount: 0,
+          grandTotal: 2242,
+          paidAmount: 2242,
+          paymentMode: 'CASH'
+        }
+      ]
+    };
+
+    let appState = loadAppState();
+    let activePartyFilter = 'ALL';
+    let activeInvoiceFilter = 'ALL';
+    let activeItemSort = 'DEFAULT';
+    let currentPreviewInvoice = null;
+    let reopenBillAfterPartySave = false;
+    let reopenPickerAfterItemSave = false;
+
+    // Cart state for the full-screen Item Picker ({ [itemId]: { qty, rate } })
+    let pickerCart = {};
+
+    function loadAppState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.items) && Array.isArray(parsed.parties) && Array.isArray(parsed.invoices)) {
+            return parsed;
+          }
+        }
+      } catch (err) {
+        console.error('Error loading appState from localStorage:', err);
+      }
+      return JSON.parse(JSON.stringify(defaultData));
+    }
+
+    function saveAppState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (err) {
+        showToast('Could not save data. Export JSON backup.', 'error');
+      }
+    }
+
+    function formatINR(num) {
+      const val = Number(num) || 0;
+      return '₹' + val.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    function formatCompactINR(num) {
+      const val = Number(num) || 0;
+      if (val >= 10000000) return '₹ ' + (val / 10000000).toFixed(2) + ' Cr';
+      if (val >= 100000) return '₹ ' + (val / 100000).toFixed(2) + ' L';
+      return '₹ ' + val.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+    }
+
+    function formatFriendlyDate(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr + 'T00:00:00');
+      if (isNaN(d)) return dateStr;
+      return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const bg = type === 'error' ? 'bg-rose-600' : 'bg-slate-900';
+      toast.className = `${bg} text-white px-4 py-3 rounded-xl shadow-lg text-xs font-semibold pointer-events-auto transition-opacity`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 250);
+      }, 2600);
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-section').forEach(section => {
+        section.classList.add('hidden');
+      });
+      const target = document.getElementById(`tab-${tabName}`);
+      if (target) {
+        target.classList.remove('hidden');
+      }
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        const active = btn.getAttribute('data-nav') === tabName;
+        btn.className = active
+          ? 'nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-left bg-indigo-600/15 text-indigo-300 border border-indigo-500/30 cursor-pointer'
+          : 'nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/70 transition text-left cursor-pointer';
+      });
+
+      document.querySelectorAll('.mnav-btn').forEach(btn => {
+        const active = btn.getAttribute('data-mnav') === tabName;
+        btn.className = active
+          ? 'mnav-btn flex flex-col items-center gap-0.5 py-1 px-2 text-[#4f39c9] font-semibold cursor-pointer'
+          : 'mnav-btn flex flex-col items-center gap-0.5 py-1 px-2 text-slate-500 font-medium cursor-pointer';
+      });
+
+      refreshAllViews();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    }
+
+    function refreshAllViews() {
+      const bizName = appState.business.name || 'Nobel Tools';
+      document.getElementById('sidebar-biz-name').textContent = bizName;
+      document.getElementById('sidebar-biz-gst').textContent = appState.business.gstin
+        ? `GSTIN: ${appState.business.gstin}`
+        : 'Non-GST Business';
+      document.getElementById('mobile-biz-name').textContent = bizName;
+      document.getElementById('dash-biz-subtitle').textContent = `${bizName} • Billing & Inventory Overview`;
+
+      renderDashboard();
+      renderParties();
+      renderItems();
+      renderInvoices();
+      populateSettingsForm();
+    }
+
+    function renderDashboard() {
+      const salesTotal = appState.invoices
+        .filter(inv => inv.type === 'SALE')
+        .reduce((sum, inv) => sum + (Number(inv.grandTotal) || 0), 0);
+
+      const purchaseTotal = appState.invoices
+        .filter(inv => inv.type === 'PURCHASE')
+        .reduce((sum, inv) => sum + (Number(inv.grandTotal) || 0), 0);
+
+      const stockValue = appState.items.reduce((sum, it) => {
+        const qty = Number(it.stock) || 0;
+        const price = Number(it.purchasePrice) > 0 ? Number(it.purchasePrice) : (Number(it.salePrice) || 0);
+        return sum + (qty * price);
+      }, 0);
+
+      const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+      const weekSale = appState.invoices
+        .filter(inv => inv.type === 'SALE' && inv.date >= sevenDaysAgo)
+        .reduce((sum, inv) => sum + (Number(inv.grandTotal) || 0), 0);
+
+      const toCollect = 581000 + salesTotal;
+      const toPay = 4726000 + purchaseTotal;
+      const netBalance = salesTotal - purchaseTotal;
+
+      document.getElementById('stat-to-collect').textContent = formatCompactINR(toCollect);
+      document.getElementById('stat-to-pay').textContent = formatCompactINR(toPay);
+      document.getElementById('stat-stock-value').textContent = `${formatCompactINR(stockValue)} • Value of Items`;
+      document.getElementById('stat-week-sale').textContent = formatCompactINR(weekSale);
+      document.getElementById('stat-total-balance').textContent = `${formatCompactINR(netBalance)} • Cash + Bank`;
+
+      const recentContainer = document.getElementById('dashboard-recent-list');
+      const recent = [...appState.invoices].slice(0, 8);
+      if (recent.length === 0) {
+        recentContainer.innerHTML = `<div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-sm text-slate-400">No transactions yet. Tap "+ Bill / Invoice" to create one.</div>`;
+        return;
+      }
+      recentContainer.innerHTML = recent.map(inv => renderInvoiceRowHTML(inv)).join('');
+    }
+
+    function renderInvoiceRowHTML(inv) {
+      const due = Math.max(0, (Number(inv.grandTotal) || 0) - (Number(inv.paidAmount) || 0));
+      let statusBadge = `<span class="px-2.5 py-0.5 text-xs font-semibold rounded-md bg-[#e8f8ed] text-[#16a34a]">Paid</span>`;
+      if (due > 0 && due >= inv.grandTotal) {
+        statusBadge = `<span class="px-2.5 py-0.5 text-xs font-semibold rounded-md bg-rose-50 text-rose-600">Unpaid</span>`;
+      } else if (due > 0) {
+        statusBadge = `<span class="px-2.5 py-0.5 text-xs font-semibold rounded-md bg-amber-50 text-amber-700">Due ${formatINR(due)}</span>`;
+      }
+
+      const docLabel = inv.type === 'SALE'
+        ? `Sales Invoice #${inv.number}`
+        : `Purchase Bill #${inv.number}`;
+
+      return `
+        <div onclick="openInvoicePreview('${inv.id}')" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs hover:border-indigo-300 transition cursor-pointer space-y-1.5">
+          <div class="flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0 text-xs font-bold">₹</span>
+            <h4 class="font-bold text-base text-slate-900 truncate">${inv.partyName}</h4>
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-xs font-medium text-slate-500">${docLabel}</p>
+            <p class="font-extrabold text-base text-slate-900">₹ ${Number(inv.grandTotal).toLocaleString('en-IN')}</p>
+          </div>
+          <div class="flex items-center justify-between gap-2 pt-0.5">
+            <p class="text-xs text-slate-400">${formatFriendlyDate(inv.date)}</p>
+            <div>${statusBadge}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function setPartyFilter(filter) {
+      activePartyFilter = filter;
+      document.querySelectorAll('.party-filter-btn').forEach(btn => {
+        btn.className = 'party-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 cursor-pointer';
+      });
+      const activeBtn = document.getElementById(`pfilter-${filter}`);
+      if (activeBtn) {
+        activeBtn.className = 'party-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-900 shadow-xs cursor-pointer';
+      }
+      renderParties();
+    }
+
+    function renderParties() {
+      const query = (document.getElementById('party-search')?.value || '').toLowerCase();
+      const container = document.getElementById('parties-list');
+      if (!container) return;
+
+      const filtered = appState.parties.filter(p => {
+        const matchesType = activePartyFilter === 'ALL' || p.type === activePartyFilter;
+        const matchesQuery = p.name.toLowerCase().includes(query) ||
+          (p.phone || '').includes(query) ||
+          (p.gstin || '').toLowerCase().includes(query);
+        return matchesType && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="col-span-full bg-white p-8 rounded-2xl border border-slate-200 text-center text-sm text-slate-400">No parties found.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(p => `
+        <div onclick="openPartyLedger('${p.id}')" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs hover:border-indigo-300 transition flex items-center justify-between gap-3 cursor-pointer">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-xl ${p.type === 'CUSTOMER' ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700'} font-bold text-sm flex items-center justify-center shrink-0">
+              ${p.name.charAt(0).toUpperCase()}
+            </div>
+            <div class="min-w-0">
+              <h4 class="font-bold text-sm text-slate-900 truncate">${p.name}</h4>
+              <p class="text-xs text-slate-500 truncate">${p.phone || 'No Phone'} ${p.gstin ? '• ' + p.gstin : ''}</p>
+              <span class="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600">${p.type}</span>
+            </div>
+          </div>
+          <span class="text-slate-400 font-bold text-base shrink-0">›</span>
+        </div>
+      `).join('');
+    }
+
+    function openPartyModal(fromBill = false) {
+      reopenBillAfterPartySave = fromBill;
+      document.getElementById('p-name').value = '';
+      document.getElementById('p-phone').value = '';
+      document.getElementById('p-gstin').value = '';
+      document.getElementById('p-address').value = '';
+      document.getElementById('party-modal').classList.remove('hidden');
+    }
+
+    function saveParty(e) {
+      e.preventDefault();
+      const newParty = {
+        id: 'p_' + Date.now(),
+        name: document.getElementById('p-name').value.trim(),
+        phone: document.getElementById('p-phone').value.trim(),
+        type: document.getElementById('p-type').value,
+        gstin: document.getElementById('p-gstin').value.trim().toUpperCase(),
+        address: document.getElementById('p-address').value.trim()
+      };
+      appState.parties.unshift(newParty);
+      saveAppState();
+      closeModal('party-modal');
+      refreshAllViews();
+      if (reopenBillAfterPartySave && !document.getElementById('bill-modal').classList.contains('hidden')) {
+        populateBillPartiesDropdown(newParty.id);
+        reopenBillAfterPartySave = false;
+      }
+      showToast(`Party "${newParty.name}" added!`);
+    }
+
+    function openPartyLedger(partyId) {
+      const party = appState.parties.find(p => p.id === partyId);
+      if (!party) return;
+      document.getElementById('ledger-party-name').textContent = party.name;
+      document.getElementById('ledger-party-meta').textContent = `${party.phone || 'No Phone'} ${party.gstin ? '• GSTIN: ' + party.gstin : ''}`;
+      document.getElementById('ledger-net-balance').textContent = party.type;
+
+      const partyBills = appState.invoices.filter(inv => inv.partyId === party.id || inv.partyName === party.name);
+      const historyContainer = document.getElementById('ledger-history-list');
+      historyContainer.innerHTML = partyBills.length
+        ? partyBills.map(inv => `
+          <div onclick="closeModal('ledger-modal'); openInvoicePreview('${inv.id}')" class="p-3 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-between text-xs cursor-pointer">
+            <div>
+              <span class="font-bold text-slate-800">${inv.type} • ${inv.number}</span>
+              <p class="text-slate-400 mt-0.5">${formatFriendlyDate(inv.date)}</p>
+            </div>
+            <span class="font-extrabold text-sm text-[#4f39c9]">${formatINR(inv.grandTotal)}</span>
+          </div>
+        `).join('')
+        : `<p class="text-center text-xs text-slate-400 py-6">No bills found for this party.</p>`;
+
+      document.getElementById('ledger-modal').classList.remove('hidden');
+    }
+
+    function toggleLowStockPill() {
+      const cb = document.getElementById('item-low-stock-only');
+      cb.checked = !cb.checked;
+      const btn = document.getElementById('pill-low-stock');
+      btn.className = cb.checked
+        ? 'px-3.5 py-2 rounded-full text-xs font-bold border border-[#4f39c9] bg-indigo-50 text-[#4f39c9] transition shrink-0 cursor-pointer'
+        : 'px-3.5 py-2 rounded-full text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:border-indigo-400 transition shrink-0 cursor-pointer';
+      renderItems();
+    }
+
+    function cycleItemSort() {
+      const order = ['DEFAULT', 'NAME', 'STOCK_HIGH', 'PRICE_HIGH'];
+      activeItemSort = order[(order.indexOf(activeItemSort) + 1) % order.length];
+      const labels = {
+        DEFAULT: 'Filter By',
+        NAME: 'Sort: Name',
+        STOCK_HIGH: 'Sort: Stock',
+        PRICE_HIGH: 'Sort: Price'
+      };
+      document.getElementById('pill-filter-by').innerHTML = `
+        <span>${labels[activeItemSort]}</span>
+        <svg viewBox="0 0 20 20" fill="none" class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 5H17M6 10H14M9 15H11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      `;
+      renderItems();
+    }
+
+    function renderItems() {
+      const query = (document.getElementById('item-search')?.value || '').toLowerCase();
+      const lowOnly = document.getElementById('item-low-stock-only')?.checked || false;
+      const catFilter = document.getElementById('item-category-filter')?.value || 'ALL';
+      const container = document.getElementById('items-cards-list');
+      if (!container) return;
+
+      let filtered = appState.items.filter(it => {
+        const matchesQuery = it.name.toLowerCase().includes(query) || (it.hsn || '').toLowerCase().includes(query);
+        const matchesLow = !lowOnly || Number(it.stock) <= 5;
+        const matchesCat = catFilter === 'ALL' || (it.unit || 'PCS') === catFilter;
+        return matchesQuery && matchesLow && matchesCat;
+      });
+
+      if (activeItemSort === 'NAME') {
+        filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+      } else if (activeItemSort === 'STOCK_HIGH') {
+        filtered = [...filtered].sort((a, b) => (Number(b.stock) || 0) - (Number(a.stock) || 0));
+      } else if (activeItemSort === 'PRICE_HIGH') {
+        filtered = [...filtered].sort((a, b) => (Number(b.salePrice) || 0) - (Number(a.salePrice) || 0));
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-sm text-slate-400">No items found. Tap "+ Create New Item" below.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(it => {
+        const initial = (it.name || 'I').charAt(0).toUpperCase();
+        const stockNum = Number(it.stock || 0).toFixed(1);
+        const isLow = Number(it.stock) <= 5;
+        return `
+          <div onclick="openItemModal('${it.id}')" class="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs hover:border-indigo-400 transition flex items-start justify-between gap-3 cursor-pointer">
+            <div class="flex items-start gap-3 min-w-0">
+              <div class="w-9 h-9 rounded-lg bg-[#e9e8ee] text-[#7b788a] font-bold text-sm flex items-center justify-center shrink-0 mt-0.5">
+                ${initial}
+              </div>
+              <div class="min-w-0">
+                <h4 class="font-bold text-sm md:text-base text-slate-900 leading-snug break-words">${it.name}</h4>
+                <div class="mt-2.5 flex items-center gap-8 text-xs">
+                  <div>
+                    <p class="text-slate-400 font-medium">Sales Price</p>
+                    <p class="text-slate-800 font-semibold text-sm mt-0.5">₹ ${Number(it.salePrice || 0).toLocaleString('en-IN')}</p>
+                  </div>
+                  <div>
+                    <p class="text-slate-400 font-medium">Purchase Price</p>
+                    <p class="text-slate-800 font-semibold text-sm mt-0.5">₹ ${Number(it.purchasePrice || 0).toLocaleString('en-IN')}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-right shrink-0 flex flex-col items-end justify-between">
+              <p class="font-extrabold text-sm md:text-base ${isLow ? 'text-rose-600' : 'text-slate-900'}">${stockNum}</p>
+              <p class="text-[11px] font-medium text-slate-400 uppercase mt-0.5">${it.unit || 'PCS'}</p>
+              <button type="button" onclick="event.stopPropagation(); openItemModal('${it.id}')" aria-label="Edit ${it.name}" class="mt-2 p-1.5 text-[#4f39c9] hover:bg-indigo-50 rounded-lg transition cursor-pointer">
+                <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 7H14M18 7H20M4 12H8M12 12H20M4 17H15M19 17H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="16" cy="7" r="2" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="10" cy="12" r="2" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="17" cy="17" r="2" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openItemModal(itemId = null, fromPicker = false) {
+      reopenPickerAfterItemSave = fromPicker;
+      if (itemId) {
+        const it = appState.items.find(x => x.id === itemId);
+        if (!it) return;
+        document.getElementById('item-modal-title').textContent = 'Edit Item & Stock';
+        document.getElementById('i-id').value = it.id;
+        document.getElementById('i-name').value = it.name;
+        document.getElementById('i-hsn').value = it.hsn || '';
+        document.getElementById('i-unit').value = it.unit || 'PCS';
+        document.getElementById('i-sale-price').value = it.salePrice;
+        document.getElementById('i-purchase-price').value = it.purchasePrice || 0;
+        document.getElementById('i-gst').value = it.gst ?? 18;
+        document.getElementById('i-stock').value = it.stock;
+      } else {
+        document.getElementById('item-modal-title').textContent = 'Create New Item';
+        document.getElementById('i-id').value = '';
+        document.getElementById('i-name').value = '';
+        document.getElementById('i-hsn').value = '';
+        document.getElementById('i-unit').value = 'PCS';
+        document.getElementById('i-sale-price').value = '';
+        document.getElementById('i-purchase-price').value = '';
+        document.getElementById('i-gst').value = '18';
+        document.getElementById('i-stock').value = '10';
+      }
+      document.getElementById('item-modal').classList.remove('hidden');
+    }
+
+    function saveItem(e) {
+      e.preventDefault();
+      const id = document.getElementById('i-id').value;
+      const itemData = {
+        id: id || 'i_' + Date.now(),
+        name: document.getElementById('i-name').value.trim(),
+        hsn: document.getElementById('i-hsn').value.trim(),
+        unit: document.getElementById('i-unit').value,
+        salePrice: parseFloat(document.getElementById('i-sale-price').value) || 0,
+        purchasePrice: parseFloat(document.getElementById('i-purchase-price').value) || 0,
+        gst: parseFloat(document.getElementById('i-gst').value) || 0,
+        stock: parseFloat(document.getElementById('i-stock').value) || 0
+      };
+
+      if (id) {
+        const idx = appState.items.findIndex(x => x.id === id);
+        if (idx !== -1) appState.items[idx] = itemData;
+        showToast('Item updated!');
+      } else {
+        appState.items.unshift(itemData);
+        showToast('New item created!');
+      }
+
+      saveAppState();
+      closeModal('item-modal');
+      refreshAllViews();
+
+      // If opened from the Item Picker, refresh picker list and update rate if needed
+      if (!document.getElementById('item-picker-modal').classList.contains('hidden')) {
+        const docType = document.getElementById('bill-doc-type').value;
+        if (pickerCart[itemData.id]) {
+          pickerCart[itemData.id].rate = docType === 'PURCHASE'
+            ? (itemData.purchasePrice || itemData.salePrice || 0)
+            : (itemData.salePrice || 0);
+        }
+        renderItemPickerList();
+      }
+      reopenPickerAfterItemSave = false;
+    }
+
+    // =========================================================
+    // FULL-SCREEN ITEM PICKER (myBillBook Style)
+    // =========================================================
+    function openItemPickerModal() {
+      const docType = document.getElementById('bill-doc-type').value;
+      pickerCart = {};
+
+      // Sync existing bill rows into pickerCart
+      document.querySelectorAll('.bill-line-row').forEach(row => {
+        const itemId = row.querySelector('.line-item-select').value;
+        const qty = parseFloat(row.querySelector('.line-qty').value) || 0;
+        const rate = parseFloat(row.querySelector('.line-rate').value) || 0;
+        if (itemId && qty > 0) {
+          pickerCart[itemId] = { qty, rate };
+        }
+      });
+
+      document.getElementById('picker-search').value = '';
+      document.getElementById('picker-mode-badge').textContent = docType === 'PURCHASE'
+        ? 'Purchase Bill • Select Items'
+        : 'Sale Invoice • Select Items';
+      renderItemPickerList();
+      document.getElementById('item-picker-modal').classList.remove('hidden');
+    }
+
+    function pickerAddItem(itemId) {
+      const item = appState.items.find(x => x.id === itemId);
+      if (!item) return;
+      const docType = document.getElementById('bill-doc-type').value;
+      const defaultRate = docType === 'PURCHASE'
+        ? (Number(item.purchasePrice) || Number(item.salePrice) || 0)
+        : (Number(item.salePrice) || 0);
+      pickerCart[itemId] = { qty: 1, rate: defaultRate };
+      renderItemPickerList();
+    }
+
+    function pickerChangeQty(itemId, delta) {
+      if (!pickerCart[itemId]) return;
+      const nextQty = Math.round((pickerCart[itemId].qty + delta) * 100) / 100;
+      if (nextQty <= 0) {
+        delete pickerCart[itemId];
+      } else {
+        pickerCart[itemId].qty = nextQty;
+      }
+      renderItemPickerList();
+    }
+
+    function pickerSetQty(itemId, valStr) {
+      const val = parseFloat(valStr);
+      if (isNaN(val) || val <= 0) {
+        delete pickerCart[itemId];
+      } else {
+        pickerCart[itemId].qty = val;
+      }
+      updatePickerBottomSummary();
+    }
+
+    function updatePickerBottomSummary() {
+      const entries = Object.entries(pickerCart);
+      const itemCount = entries.length;
+      const totalAmount = entries.reduce((sum, [id, entry]) => {
+        return sum + ((Number(entry.qty) || 0) * (Number(entry.rate) || 0));
+      }, 0);
+
+      document.getElementById('picker-summary-count').textContent = `${itemCount} ${itemCount === 1 ? 'item' : 'items'}`;
+      document.getElementById('picker-summary-total').textContent = `₹ ${totalAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+    }
+
+    function renderItemPickerList() {
+      const query = (document.getElementById('picker-search')?.value || '').toLowerCase();
+      const container = document.getElementById('picker-items-list');
+      const docType = document.getElementById('bill-doc-type').value;
+      if (!container) return;
+
+      const filtered = appState.items.filter(it =>
+        it.name.toLowerCase().includes(query) ||
+        (it.hsn || '').toLowerCase().includes(query)
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-sm text-slate-400">No items found. Tap "+ Create New Item" above.</div>`;
+        updatePickerBottomSummary();
+        return;
+      }
+
+      container.innerHTML = filtered.map((it, index) => {
+        const unit = it.unit || 'PCS';
+        const stockText = `${Number(it.stock || 0).toFixed(1)}${unit}`;
+        const isLow = Number(it.stock) <= 5;
+        const salePrice = Number(it.salePrice || 0).toLocaleString('en-IN');
+        const purchasePrice = Number(it.purchasePrice || 0).toLocaleString('en-IN');
+        const inCart = pickerCart[it.id];
+
+        // Alternating soft badge tint matching screenshot (greenish / light slate)
+        const badgeStyle = index % 3 === 2
+          ? 'bg-[#e8edf5] text-slate-600'
+          : 'bg-[#e3f1e8] text-slate-600';
+
+        const rightControls = inCart
+          ? `
+            <div class="flex flex-col items-end gap-2 shrink-0">
+              <button type="button" onclick="openItemModal('${it.id}', true)" class="px-4 py-1.5 rounded-lg border border-[#4f39c9]/40 bg-white hover:bg-indigo-50 text-[#4f39c9] font-bold text-xs tracking-wide cursor-pointer">
+                EDIT
+              </button>
+              <div class="inline-flex items-center border border-slate-200 rounded-lg bg-white shadow-2xs overflow-hidden">
+                <button type="button" onclick="pickerChangeQty('${it.id}', -1)" class="px-2.5 py-1.5 text-[#4f39c9] hover:bg-indigo-50 font-bold text-sm cursor-pointer">−</button>
+                <input type="number" step="0.1" min="0" value="${inCart.qty}" onchange="pickerSetQty('${it.id}', this.value)" class="w-11 text-center text-xs font-extrabold text-slate-900 focus:outline-none" />
+                <button type="button" onclick="pickerChangeQty('${it.id}', 1)" class="px-2.5 py-1.5 text-[#4f39c9] hover:bg-indigo-50 font-bold text-sm cursor-pointer">+</button>
+              </div>
+            </div>
+          `
+          : `
+            <div class="shrink-0 pt-1">
+              <button type="button" onclick="pickerAddItem('${it.id}')" class="px-4 py-2 rounded-lg border border-[#4f39c9]/40 bg-white hover:bg-indigo-50 active:scale-95 text-[#4f39c9] font-bold text-xs tracking-wide transition cursor-pointer">
+                ADD +
+              </button>
+            </div>
+          `;
+
+        return `
+          <div class="px-4 py-3.5 bg-white flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-lg ${badgeStyle} font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                1
+              </div>
+              <div class="min-w-0">
+                <h4 class="font-bold text-sm text-slate-900 leading-snug break-words">${it.name}</h4>
+                <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
+                  <span class="${docType === 'SALE' ? 'font-bold text-slate-900' : 'font-semibold text-slate-600'}">Sale: ₹${salePrice}/${unit}</span>
+                  <span class="${docType === 'PURCHASE' ? 'font-bold text-[#4f39c9]' : 'font-semibold text-emerald-700'}">Purchase: ₹${purchasePrice}/${unit}</span>
+                </div>
+                <p class="mt-1.5 text-xs font-medium ${isLow ? 'text-rose-600' : 'text-slate-500'}">Stock: ${stockText}</p>
+              </div>
+            </div>
+            ${rightControls}
+          </div>
+        `;
+      }).join('');
+
+      updatePickerBottomSummary();
+    }
+
+    function applyItemPickerToBill(autoSubmitBill = false) {
+      const entries = Object.entries(pickerCart);
+      if (entries.length === 0) {
+        showToast('Kam se kam 1 item ADD + karein!', 'error');
+        return;
+      }
+
+      const tbody = document.getElementById('bill-items-rows');
+      tbody.innerHTML = '';
+
+      entries.forEach(([itemId, entry]) => {
+        const item = appState.items.find(x => x.id === itemId);
+        if (!item) return;
+        addBillLineRow({
+          itemId: item.id,
+          qty: entry.qty,
+          rate: entry.rate,
+          gst: item.gst ?? 18
+        });
+      });
+
+      recalculateBillTotals();
+      closeModal('item-picker-modal');
+
+      if (autoSubmitBill) {
+        const form = document.getElementById('bill-form');
+        if (form.requestSubmit) {
+          form.requestSubmit();
+        } else {
+          saveBill(new Event('submit'));
+        }
+      }
+    }
+
+    // =========================================================
+    // BILL MODAL & LINE ROWS
+    // =========================================================
+    function openBillModal(docType = 'SALE') {
+      document.getElementById('bill-doc-type').value = docType;
+      onBillTypeChange();
+      populateBillPartiesDropdown();
+
+      document.getElementById('bill-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('bill-discount').value = '0';
+      document.getElementById('bill-is-gst').checked = true;
+      document.getElementById('bill-payment-mode').value = 'CASH';
+
+      const rowsContainer = document.getElementById('bill-items-rows');
+      rowsContainer.innerHTML = '';
+      document.getElementById('bill-modal').classList.remove('hidden');
+
+      // Open the new full-screen Item Picker directly when creating a bill
+      openItemPickerModal();
+    }
+
+    function onBillTypeChange() {
+      const docType = document.getElementById('bill-doc-type').value;
+      const count = appState.invoices.filter(x => x.type === docType).length + 1270;
+      if (docType === 'SALE') {
+        document.getElementById('bill-modal-title').textContent = 'Create Sale Invoice';
+        document.getElementById('bill-number').value = `${appState.business.prefix || '2026-27/'}${count}`;
+        document.getElementById('bill-paid-label').textContent = 'Settled Amount (₹)';
+      } else {
+        document.getElementById('bill-modal-title').textContent = 'Record Purchase Bill';
+        document.getElementById('bill-number').value = `PUR-${count}`;
+        document.getElementById('bill-paid-label').textContent = 'Settled Amount (₹)';
+      }
+      recalculateBillTotals();
+    }
+
+    function populateBillPartiesDropdown(selectedId = null) {
+      const select = document.getElementById('bill-party');
+      select.innerHTML = appState.parties.map(p =>
+        `<option value="${p.id}" ${selectedId === p.id ? 'selected' : ''}>${p.name} (${p.type})</option>`
+      ).join('');
+    }
+
+    function addBillLineRow(prefill = null) {
+      const tbody = document.getElementById('bill-items-rows');
+      const row = document.createElement('tr');
+      row.className = 'bill-line-row';
+      const itemOptions = appState.items.map(it =>
+        `<option value="${it.id}" ${prefill && prefill.itemId === it.id ? 'selected' : ''}>${it.name} (Stock: ${it.stock} | Pur: ₹${it.purchasePrice || 0})</option>`
+      ).join('');
+
+      const qtyVal = prefill ? prefill.qty : 1;
+      const rateVal = prefill ? prefill.rate : 0;
+      const gstVal = prefill ? prefill.gst : 18;
+
+      row.innerHTML = `
+        <td class="p-2">
+          <select onchange="onLineItemSelect(this)" class="line-item-select w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium">
+            <option value="">-- Choose Item --</option>
+            ${itemOptions}
+          </select>
+        </td>
+        <td class="p-2">
+          <input type="number" min="0.1" step="0.1" value="${qtyVal}" oninput="recalculateBillTotals()" class="line-qty w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold" />
+        </td>
+        <td class="p-2">
+          <input type="number" min="0" step="0.01" value="${rateVal}" oninput="recalculateBillTotals()" class="line-rate w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold" />
+        </td>
+        <td class="p-2">
+          <input type="number" min="0" max="28" value="${gstVal}" oninput="recalculateBillTotals()" class="line-gst w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs" />
+        </td>
+        <td class="p-2 text-right font-bold text-xs text-slate-900 line-total">₹0.00</td>
+        <td class="p-2 text-center">
+          <button type="button" onclick="this.closest('tr').remove(); recalculateBillTotals();" class="text-rose-500 hover:text-rose-700 p-1 font-bold cursor-pointer">✕</button>
+        </td>
+      `;
+      tbody.appendChild(row);
+      recalculateBillTotals();
+    }
+
+    function onLineItemSelect(selectEl) {
+      const row = selectEl.closest('tr');
+      const item = appState.items.find(x => x.id === selectEl.value);
+      const docType = document.getElementById('bill-doc-type').value;
+      if (item) {
+        row.querySelector('.line-rate').value = docType === 'PURCHASE' ? (item.purchasePrice || item.salePrice || 0) : (item.salePrice || 0);
+        row.querySelector('.line-gst').value = item.gst ?? 18;
+      }
+      recalculateBillTotals();
+    }
+
+    function recalculateBillTotals() {
+      const isGst = document.getElementById('bill-is-gst').checked;
+      let subtotal = 0;
+      let taxTotal = 0;
+
+      document.querySelectorAll('.bill-line-row').forEach(row => {
+        const qty = parseFloat(row.querySelector('.line-qty').value) || 0;
+        const rate = parseFloat(row.querySelector('.line-rate').value) || 0;
+        const gst = isGst ? (parseFloat(row.querySelector('.line-gst').value) || 0) : 0;
+        const base = qty * rate;
+        const tax = base * (gst / 100);
+        subtotal += base;
+        taxTotal += tax;
+        row.querySelector('.line-total').textContent = formatINR(base + tax);
+      });
+
+      const discount = parseFloat(document.getElementById('bill-discount').value) || 0;
+      const grandTotal = Math.max(0, Math.round((subtotal + taxTotal - discount) * 100) / 100);
+
+      document.getElementById('bill-subtotal').textContent = formatINR(subtotal);
+      document.getElementById('bill-tax-total').textContent = formatINR(taxTotal);
+      document.getElementById('bill-grand-total').textContent = formatINR(grandTotal);
+      document.getElementById('bill-amount-paid').value = grandTotal;
+    }
+
+    function saveBill(e) {
+      e.preventDefault();
+      const docType = document.getElementById('bill-doc-type').value;
+      const party = appState.parties.find(p => p.id === document.getElementById('bill-party').value);
+      const isGst = document.getElementById('bill-is-gst').checked;
+
+      if (!party) {
+        showToast('Please select a party!', 'error');
+        return;
+      }
+
+      const lineItems = [];
+      let subtotal = 0;
+      let taxTotal = 0;
+
+      document.querySelectorAll('.bill-line-row').forEach(row => {
+        const itemObj = appState.items.find(x => x.id === row.querySelector('.line-item-select').value);
+        const qty = parseFloat(row.querySelector('.line-qty').value) || 0;
+        const rate = parseFloat(row.querySelector('.line-rate').value) || 0;
+        const gst = isGst ? (parseFloat(row.querySelector('.line-gst').value) || 0) : 0;
+
+        if (itemObj && qty > 0) {
+          const base = qty * rate;
+          const tax = base * (gst / 100);
+          subtotal += base;
+          taxTotal += tax;
+
+          lineItems.push({
+            itemId: itemObj.id,
+            name: itemObj.name,
+            hsn: itemObj.hsn || '',
+            unit: itemObj.unit || 'PCS',
+            qty,
+            rate,
+            gst
+          });
+
+          if (docType === 'SALE') {
+            itemObj.stock = Math.max(0, (Number(itemObj.stock) || 0) - qty);
+          } else {
+            itemObj.stock = (Number(itemObj.stock) || 0) + qty;
+          }
+        }
+      });
+
+      if (lineItems.length === 0) {
+        showToast('Select at least one item with quantity!', 'error');
+        return;
+      }
+
+      const discount = parseFloat(document.getElementById('bill-discount').value) || 0;
+      const grandTotal = Math.max(0, Math.round((subtotal + taxTotal - discount) * 100) / 100);
+      const paidAmount = parseFloat(document.getElementById('bill-amount-paid').value) || 0;
+
+      const newInvoice = {
+        id: 'inv_' + Date.now(),
+        number: document.getElementById('bill-number').value.trim(),
+        type: docType,
+        date: document.getElementById('bill-date').value,
+        partyId: party.id,
+        partyName: party.name,
+        partyPhone: party.phone || '',
+        partyGstin: party.gstin || '',
+        partyAddress: party.address || '',
+        isGst,
+        items: lineItems,
+        subtotal,
+        taxTotal,
+        discount,
+        grandTotal,
+        paidAmount,
+        paymentMode: document.getElementById('bill-payment-mode').value
+      };
+
+      appState.invoices.unshift(newInvoice);
+      saveAppState();
+      closeModal('bill-modal');
+      refreshAllViews();
+      showToast(`${docType} saved & stock updated!`);
+      openInvoicePreview(newInvoice.id);
+    }
+
+    function setInvoiceFilter(filter) {
+      activeInvoiceFilter = filter;
+      document.querySelectorAll('.inv-filter-btn').forEach(btn => {
+        btn.className = 'inv-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 cursor-pointer';
+      });
+      const activeBtn = document.getElementById(`ifilter-${filter}`);
+      if (activeBtn) {
+        activeBtn.className = 'inv-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-900 shadow-xs cursor-pointer';
+      }
+      renderInvoices();
+    }
+
+    function renderInvoices() {
+      const query = (document.getElementById('invoice-search')?.value || '').toLowerCase();
+      const container = document.getElementById('invoices-list');
+      if (!container) return;
+
+      const filtered = appState.invoices.filter(inv => {
+        const matchesType = activeInvoiceFilter === 'ALL' || inv.type === activeInvoiceFilter;
+        const matchesQuery = inv.number.toLowerCase().includes(query) || inv.partyName.toLowerCase().includes(query);
+        return matchesType && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-sm text-slate-400">No bills match your filter.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(inv => renderInvoiceRowHTML(inv)).join('');
+    }
+
+    function openInvoicePreview(invId) {
+      const inv = appState.invoices.find(x => x.id === invId);
+      if (!inv) return;
+      currentPreviewInvoice = inv;
+
+      const biz = appState.business;
+      const docHeading = inv.type === 'SALE'
+        ? (inv.isGst ? 'TAX INVOICE' : 'BILL OF SUPPLY')
+        : 'PURCHASE VOUCHER';
+
+      const cgst = inv.taxTotal / 2;
+      const sgst = inv.taxTotal / 2;
+      const due = Math.max(0, inv.grandTotal - inv.paidAmount);
+
+      const rowsHTML = inv.items.map((it, idx) => {
+        const taxable = it.qty * it.rate;
+        const taxAmt = inv.isGst ? taxable * (it.gst / 100) : 0;
+        return `
+          <tr class="border-b border-slate-200 text-xs">
+            <td class="py-2.5 px-2 text-slate-500">${idx + 1}</td>
+            <td class="py-2.5 px-2 font-semibold text-slate-900">${it.name}</td>
+            <td class="py-2.5 px-2 text-slate-600">${it.hsn || '-'}</td>
+            <td class="py-2.5 px-2 text-right">${it.qty} ${it.unit}</td>
+            <td class="py-2.5 px-2 text-right">${formatINR(it.rate)}</td>
+            ${inv.isGst ? `<td class="py-2.5 px-2 text-right">${it.gst}% (${formatINR(taxAmt)})</td>` : ''}
+            <td class="py-2.5 px-2 text-right font-bold text-slate-900">${formatINR(taxable + taxAmt)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('printable-invoice-sheet').innerHTML = `
+        <div class="border-b-2 border-slate-900 pb-4 flex flex-col sm:flex-row justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <div class="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 p-2">
+              <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                <rect x="6" y="4" width="24" height="28" rx="4" stroke="white" stroke-width="2.2"/>
+                <path d="M12 12H24M12 18H20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+                <circle cx="24" cy="25" r="4.5" fill="#34d399"/>
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-xl font-extrabold uppercase tracking-tight text-slate-900">${biz.name}</h1>
+              <p class="text-xs text-slate-600 mt-1">${biz.address}</p>
+              <p class="text-xs text-slate-700 font-medium mt-1">Phone: ${biz.phone} ${biz.gstin ? `| GSTIN: <strong>${biz.gstin}</strong>` : ''}</p>
+            </div>
+          </div>
+          <div class="sm:text-right">
+            <span class="inline-block px-3 py-1 bg-slate-900 text-white text-xs font-bold tracking-wider uppercase rounded">${docHeading}</span>
+            <p class="text-sm font-bold text-slate-900 mt-2">Invoice #: ${inv.number}</p>
+            <p class="text-xs text-slate-600">Date: ${formatFriendlyDate(inv.date)}</p>
+          </div>
+        </div>
+
+        <div class="py-4 border-b border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div>
+            <span class="uppercase font-bold text-slate-400 text-[10px]">Bill To</span>
+            <p class="font-bold text-sm text-slate-900 mt-0.5">${inv.partyName}</p>
+            <p class="text-slate-600">${inv.partyAddress || ''}</p>
+            <p class="text-slate-600 mt-0.5">${inv.partyPhone ? 'Mobile: ' + inv.partyPhone : ''} ${inv.partyGstin ? `| GSTIN: <strong>${inv.partyGstin}</strong>` : ''}</p>
+          </div>
+          <div class="sm:text-right">
+            <span class="uppercase font-bold text-slate-400 text-[10px]">Payment Info</span>
+            <p class="text-slate-700 mt-0.5">Mode: <strong>${inv.paymentMode}</strong></p>
+            <p class="text-emerald-700">Paid: <strong>${formatINR(inv.paidAmount)}</strong></p>
+            ${due > 0 ? `<p class="text-rose-600">Due: <strong>${formatINR(due)}</strong></p>` : ''}
+          </div>
+        </div>
+
+        <div class="my-4 overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-100 border-y border-slate-300 text-[11px] font-bold uppercase text-slate-700">
+                <th class="py-2 px-2">#</th>
+                <th class="py-2 px-2">Item</th>
+                <th class="py-2 px-2">HSN</th>
+                <th class="py-2 px-2 text-right">Qty</th>
+                <th class="py-2 px-2 text-right">Rate</th>
+                ${inv.isGst ? `<th class="py-2 px-2 text-right">GST</th>` : ''}
+                <th class="py-2 px-2 text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHTML}</tbody>
+          </table>
+        </div>
+
+        <div class="pt-4 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
+          <div class="space-y-1.5">
+            <p class="font-bold text-slate-800 uppercase text-[11px]">Bank & UPI Details</p>
+            <p class="text-slate-600">${biz.bank || '-'}</p>
+            ${biz.upi ? `<p class="text-[#4f39c9] font-semibold">UPI: ${biz.upi}</p>` : ''}
+          </div>
+          <div class="space-y-1.5 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+            <div class="flex justify-between text-slate-600">
+              <span>Taxable Amount:</span>
+              <span class="font-semibold">${formatINR(inv.subtotal)}</span>
+            </div>
+            ${inv.isGst ? `
+              <div class="flex justify-between text-slate-600">
+                <span>CGST:</span>
+                <span>${formatINR(cgst)}</span>
+              </div>
+              <div class="flex justify-between text-slate-600">
+                <span>SGST:</span>
+                <span>${formatINR(sgst)}</span>
+              </div>
+            ` : ''}
+            ${inv.discount > 0 ? `
+              <div class="flex justify-between text-emerald-700">
+                <span>Discount:</span>
+                <span>- ${formatINR(inv.discount)}</span>
+              </div>
+            ` : ''}
+            <div class="border-t border-slate-300 pt-2 flex justify-between text-base font-extrabold text-slate-900">
+              <span>Grand Total:</span>
+              <span>${formatINR(inv.grandTotal)}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('invoice-print-modal').classList.remove('hidden');
+    }
+
+    function shareInvoiceWhatsApp() {
+      if (!currentPreviewInvoice) return;
+      const inv = currentPreviewInvoice;
+      const biz = appState.business;
+      const text = `*${biz.name}*
+Invoice: *${inv.number}* (${formatFriendlyDate(inv.date)})
+Party: ${inv.partyName}
+Total: *${formatINR(inv.grandTotal)}*`;
+      const cleanPhone = (inv.partyPhone || '').replace(/\D/g, '');
+      const phoneWithCode = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+      window.open(`https://wa.me/${phoneWithCode}?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function populateSettingsForm() {
+      const b = appState.business;
+      document.getElementById('set-name').value = b.name || '';
+      document.getElementById('set-phone').value = b.phone || '';
+      document.getElementById('set-gstin').value = b.gstin || '';
+      document.getElementById('set-address').value = b.address || '';
+      document.getElementById('set-prefix').value = b.prefix || '2026-27/';
+      document.getElementById('set-upi').value = b.upi || '';
+      document.getElementById('set-bank').value = b.bank || '';
+      document.getElementById('set-sheets-url').value = b.sheetsWebhookUrl || '';
+    }
+
+    function saveBusinessSettings(e) {
+      e.preventDefault();
+      appState.business = {
+        name: document.getElementById('set-name').value.trim(),
+        phone: document.getElementById('set-phone').value.trim(),
+        gstin: document.getElementById('set-gstin').value.trim().toUpperCase(),
+        address: document.getElementById('set-address').value.trim(),
+        prefix: document.getElementById('set-prefix').value.trim().toUpperCase(),
+        upi: document.getElementById('set-upi').value.trim(),
+        bank: document.getElementById('set-bank').value.trim(),
+        sheetsWebhookUrl: document.getElementById('set-sheets-url').value.trim()
+      };
+      saveAppState();
+      refreshAllViews();
+      showToast('Business settings saved!');
+    }
+
+    async function syncToGoogleSheets() {
+      const url = (document.getElementById('set-sheets-url').value || appState.business.sheetsWebhookUrl || '').trim();
+      if (!url) {
+        showToast('Enter your Google Apps Script Web App URL first.', 'error');
+        return;
+      }
+      appState.business.sheetsWebhookUrl = url;
+      saveAppState();
+      try {
+        await fetch(url, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ syncedAt: new Date().toISOString(), data: appState })
+        });
+        showToast('Sent data to Google Sheets!');
+      } catch (err) {
+        showToast('Sync request failed. Check Web App URL.', 'error');
+      }
+    }
+
+    function exportCSV(kind) {
+      let rows = [];
+      if (kind === 'invoices') {
+        rows.push(['Invoice No', 'Type', 'Date', 'Party', 'Phone', 'GSTIN', 'Taxable', 'GST', 'Grand Total', 'Mode']);
+        appState.invoices.forEach(inv => {
+          rows.push([inv.number, inv.type, inv.date, `"${inv.partyName}"`, inv.partyPhone, inv.partyGstin, inv.subtotal, inv.taxTotal, inv.grandTotal, inv.paymentMode]);
+        });
+      } else {
+        rows.push(['Item Name', 'HSN', 'Unit', 'Sales Price', 'Purchase Price', 'GST %', 'Stock']);
+        appState.items.forEach(it => {
+          rows.push([`"${it.name}"`, it.hsn, it.unit, it.salePrice, it.purchasePrice, it.gst, it.stock]);
+        });
+      }
+      const uri = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('\n');
+      const link = document.createElement('a');
+      link.setAttribute('href', encodeURI(uri));
+      link.setAttribute('download', `nobel_tools_${kind}_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      showToast(`${kind.toUpperCase()} CSV exported!`);
+    }
+
+    function exportFullJSON() {
+      const uri = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(appState, null, 2));
+      const link = document.createElement('a');
+      link.setAttribute('href', uri);
+      link.setAttribute('download', `Nobel_Tools_Backup_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      showToast('Full backup JSON downloaded!');
+    }
+
+    function importFullJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.business && Array.isArray(parsed.parties) && Array.isArray(parsed.items)) {
+            appState = parsed;
+            saveAppState();
+            refreshAllViews();
+            showToast('Backup restored!');
+          } else {
+            showToast('Invalid backup JSON file.', 'error');
+          }
+        } catch (err) {
+          showToast('Could not read backup file.', 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetDemoData() {
+      appState = JSON.parse(JSON.stringify(defaultData));
+      saveAppState();
+      refreshAllViews();
+      showToast('Demo data restored!');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      refreshAllViews();
+    });
+  </script>
+</body>
+</html>
