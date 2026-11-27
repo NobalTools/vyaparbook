@@ -1,4 +1,4 @@
-```html
+html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +9,7 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -145,7 +146,7 @@
           <p class="text-[11px] text-slate-400">Billing &amp; Inventory</p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5">
         <button type="button" id="mobile-settings-btn" class="p-1.5 rounded-lg bg-slate-800 text-slate-200 hover:text-white" title="Settings">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         </button>
@@ -201,17 +202,14 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
           <div class="flex flex-1 flex-wrap items-center gap-2.5">
             <input id="bills-search" type="text" placeholder="Search invoice #, party name..." class="flex-1 min-w-[180px] px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600" />
-            <select id="bills-type-filter" class="px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-600">
-              <option value="all">All Types</option>
-              <option value="sale">Sale Bills</option>
-              <option value="purchase">Purchase Bills</option>
-            </select>
-            <select id="bills-status-filter" class="px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-600">
-              <option value="all">All Status</option>
-              <option value="paid">Paid</option>
-              <option value="partial">Partial</option>
-              <option value="unpaid">Unpaid</option>
-            </select>
+            <input type="hidden" id="bills-type-filter" value="all" />
+            <button type="button" id="bills-type-filter-btn" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition">
+              <span>All Types</span><span class="text-slate-400">&#9662;</span>
+            </button>
+            <input type="hidden" id="bills-status-filter" value="all" />
+            <button type="button" id="bills-status-filter-btn" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition">
+              <span>All Status</span><span class="text-slate-400">&#9662;</span>
+            </button>
           </div>
           <div class="flex items-center gap-2">
             <button type="button" id="bills-new-purchase-btn" class="px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-semibold transition">
@@ -326,12 +324,10 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
           <div class="flex flex-1 flex-wrap items-center gap-2.5">
             <input id="parties-search" type="text" placeholder="Search party name, phone, GSTIN..." class="flex-1 min-w-[180px] px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600" />
-            <select id="parties-type-filter" class="px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-600">
-              <option value="all">All Parties</option>
-              <option value="customer">Customers</option>
-              <option value="supplier">Suppliers</option>
-              <option value="due">With Pending Balance</option>
-            </select>
+            <input type="hidden" id="parties-type-filter" value="all" />
+            <button type="button" id="parties-type-filter-btn" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition">
+              <span>All Parties</span><span class="text-slate-400">&#9662;</span>
+            </button>
           </div>
           <button type="button" id="add-party-btn" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-sm transition shrink-0">
             + Add Party
@@ -346,14 +342,14 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
           <div class="flex flex-1 flex-wrap items-center gap-2.5">
             <input id="items-search" type="text" placeholder="Search item name, SKU, category..." class="flex-1 min-w-[180px] px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600" />
-            <select id="items-stock-filter" class="px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-600">
-              <option value="all">All Items</option>
-              <option value="low">Low Stock</option>
-              <option value="out">Out of Stock</option>
-            </select>
-            <select id="items-category-filter" class="px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-600">
-              <option value="all">All Categories</option>
-            </select>
+            <input type="hidden" id="items-stock-filter" value="all" />
+            <button type="button" id="items-stock-filter-btn" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition">
+              <span>All Items</span><span class="text-slate-400">&#9662;</span>
+            </button>
+            <input type="hidden" id="items-category-filter" value="all" />
+            <button type="button" id="items-category-filter-btn" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition">
+              <span>All Categories</span><span class="text-slate-400">&#9662;</span>
+            </button>
           </div>
           <button type="button" id="add-item-btn" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-sm transition shrink-0">
             + Add Item
@@ -364,22 +360,39 @@
       </section>
 
       <!-- TAB 6: REPORTS -->
-      <section id="tab-reports" class="tab-section hidden space-y-5">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-          <div class="flex flex-wrap items-center gap-2">
-            <button type="button" data-report="summary" class="report-subtab px-3.5 py-2 rounded-xl text-xs font-semibold bg-brand-600 text-white">Sales &amp; Purchase</button>
-            <button type="button" data-report="gst" class="report-subtab px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">GST Summary</button>
-            <button type="button" data-report="stock" class="report-subtab px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Stock Valuation</button>
-            <button type="button" data-report="parties" class="report-subtab px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Party Ledger</button>
+      <section id="tab-reports" class="tab-section hidden space-y-4">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" data-report="gstr1" class="report-subtab px-3.5 py-2 rounded-xl text-xs font-semibold bg-brand-600 text-white">GSTR-1 (Sales)</button>
+              <button type="button" data-report="gstr2" class="report-subtab px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">GSTR-2 (Purchase)</button>
+              <button type="button" data-report="gst" class="report-subtab px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">GST Summary</button>
+              <button type="button" data-report="stock" class="report-subtab px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Stock Valuation</button>
+              <button type="button" data-report="parties" class="report-subtab px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Party Ledger</button>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" id="report-export-pdf-btn" class="px-3 py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition">PDF</button>
+              <button type="button" id="report-export-xlsx-btn" class="px-3 py-2 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold transition">Excel</button>
+              <button type="button" id="report-export-json-btn" class="px-3 py-2 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-brand-600 text-xs font-bold transition">JSON</button>
+              <button type="button" id="report-export-csv-btn" class="px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition">CSV</button>
+              <button type="button" id="report-share-wa-btn" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition">WhatsApp Share</button>
+            </div>
           </div>
-          <div class="flex items-center gap-2">
-            <button type="button" id="report-export-csv-btn" class="px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition">
-              Export CSV
+
+          <div class="flex flex-wrap items-center gap-2.5 pt-2.5 border-t border-slate-100 text-xs">
+            <span class="font-bold text-slate-600">Date Range:</span>
+            <input type="hidden" id="report-date-preset" value="all" />
+            <button type="button" id="report-date-preset-btn" class="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 font-semibold text-slate-800 inline-flex items-center gap-1.5 transition">
+              <span>All Time</span><span class="text-slate-400">&#9662;</span>
             </button>
+            <input id="report-date-from" type="date" class="px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-700" />
+            <span class="text-slate-400">to</span>
+            <input id="report-date-to" type="date" class="px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-700" />
+            <button type="button" id="report-date-go-btn" class="px-4 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-bold shadow-sm transition">Go</button>
           </div>
         </div>
 
-        <div id="report-content" class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm"></div>
+        <div id="report-content" class="bg-white rounded-2xl border border-slate-200 p-4 md:p-6 shadow-sm overflow-x-auto"></div>
       </section>
 
       <!-- TAB 7: SETTINGS -->
@@ -472,7 +485,7 @@
               <input type="hidden" id="set-invoice-layout" value="classic" />
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5" id="layout-picker-grid">
                 <button type="button" data-layout-choice="classic" class="layout-card text-left p-3 rounded-xl border-2 border-brand-600 bg-indigo-50/50 transition">
-                  <div class="text-xs font-bold text-slate-900">1. Clean Stripe GST</div>
+                  <div class="text-xs font-bold text-slate-900">1. Nobel PDF (Exact)</div>
                   <p class="text-[11px] text-slate-500 mt-0.5">Grey bar, Bank &amp; UPI QR</p>
                 </button>
                 <button type="button" data-layout-choice="modern" class="layout-card text-left p-3 rounded-xl border-2 border-slate-200 hover:border-slate-300 bg-white transition">
@@ -567,10 +580,6 @@
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
       <span class="text-[10px] font-semibold">Items</span>
     </button>
-    <button type="button" data-tab="reports" class="mob-nav-btn flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-      <span class="text-[10px] font-semibold">Reports</span>
-    </button>
     <button type="button" data-tab="settings" class="mob-nav-btn flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
       <span class="text-[10px] font-semibold">Settings</span>
@@ -578,13 +587,20 @@
   </nav>
 
   <!-- MODAL: ADD / EDIT ITEM -->
-  <div id="item-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-5 md:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between mb-4">
-        <h3 id="item-modal-title" class="text-base font-bold text-slate-900">Add New Item</h3>
-        <button type="button" data-close-modal="item-modal" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">&times;</button>
+  <div id="item-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 no-print">
+    <div class="bg-white sm:rounded-2xl max-w-lg w-full h-full sm:h-auto sm:max-h-[92vh] shadow-2xl flex flex-col overflow-hidden">
+      <div class="bg-white border-b border-slate-200 text-slate-900 px-4 sm:px-5 py-3.5 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <button type="button" data-close-modal="item-modal" class="p-2 rounded-xl hover:bg-slate-100 text-slate-700" title="Back">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <div>
+            <h3 id="item-modal-title" class="text-sm sm:text-base font-bold text-slate-900">Add New Item</h3>
+            <p class="text-[11px] text-slate-500">Product pricing, HSN &amp; stock</p>
+          </div>
+        </div>
       </div>
-      <form id="item-form" class="space-y-3.5">
+      <form id="item-form" class="p-5 space-y-4 overflow-y-auto flex-1 bg-slate-50/50">
         <input type="hidden" id="item-edit-id" />
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="sm:col-span-2">
@@ -592,8 +608,8 @@
             <input id="item-name" type="text" required placeholder="e.g. Bosch Angle Grinder GWS 600" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">SKU / Item Code</label>
-            <input id="item-sku" type="text" placeholder="e.g. NT-PWR-101" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
+            <label class="block text-xs font-semibold text-slate-700 mb-1">SKU / HSN Code</label>
+            <input id="item-sku" type="text" placeholder="e.g. 68051010" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Category</label>
@@ -654,13 +670,20 @@
   </div>
 
   <!-- MODAL: ADD / EDIT PARTY -->
-  <div id="party-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-5 md:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between mb-4">
-        <h3 id="party-modal-title" class="text-base font-bold text-slate-900">Add New Party</h3>
-        <button type="button" data-close-modal="party-modal" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">&times;</button>
+  <div id="party-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 no-print">
+    <div class="bg-white sm:rounded-2xl max-w-lg w-full h-full sm:h-auto sm:max-h-[92vh] shadow-2xl flex flex-col overflow-hidden">
+      <div class="bg-white border-b border-slate-200 text-slate-900 px-4 sm:px-5 py-3.5 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <button type="button" data-close-modal="party-modal" class="p-2 rounded-xl hover:bg-slate-100 text-slate-700" title="Back">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <div>
+            <h3 id="party-modal-title" class="text-sm sm:text-base font-bold text-slate-900">Add New Party</h3>
+            <p class="text-[11px] text-slate-500">Customer or supplier details &amp; GSTIN</p>
+          </div>
+        </div>
       </div>
-      <form id="party-form" class="space-y-3.5">
+      <form id="party-form" class="p-5 space-y-4 overflow-y-auto flex-1 bg-slate-50/50">
         <input type="hidden" id="party-edit-id" />
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="sm:col-span-2">
@@ -700,14 +723,22 @@
   </div>
 
   <!-- MODAL: CREATE BILL -->
-  <div id="bill-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 md:p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-3xl w-full p-5 md:p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
-      <div class="flex items-center justify-between mb-4">
-        <h3 id="bill-modal-title" class="text-base font-bold text-slate-900">Create New Sale Bill</h3>
-        <button type="button" data-close-modal="bill-modal" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">&times;</button>
+  <div id="bill-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 no-print">
+    <div class="bg-slate-50 sm:rounded-2xl max-w-3xl w-full h-full sm:h-auto sm:max-h-[94vh] shadow-2xl flex flex-col overflow-hidden">
+      <div class="bg-white border-b border-slate-200 text-slate-900 px-4 sm:px-5 py-3.5 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <button type="button" data-close-modal="bill-modal" class="p-2 rounded-xl hover:bg-slate-100 text-slate-700" title="Back">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <div>
+            <h3 id="bill-modal-title" class="text-sm sm:text-base font-bold text-slate-900">Create New Sale Bill</h3>
+            <p class="text-[11px] text-slate-500">Select party, add items, and generate GST invoice</p>
+          </div>
+        </div>
       </div>
-      <form id="bill-form" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+      <form id="bill-form" class="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1">
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Bill Type</label>
             <select id="bill-type" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white">
@@ -736,13 +767,22 @@
           </div>
         </div>
 
-        <!-- Line Items -->
-        <div class="border border-slate-200 rounded-xl overflow-hidden">
-          <div class="bg-slate-50 px-3.5 py-2.5 border-b border-slate-200 flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-700">Bill Items</span>
-            <button type="button" id="bill-add-line-btn" class="text-xs font-semibold text-brand-600 hover:underline">+ Add Line Item</button>
+        </div>
+
+        <!-- Line Items (My BillBook Card Style) -->
+        <div class="border border-slate-200 rounded-xl overflow-hidden bg-white">
+          <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between gap-2">
+            <span id="bill-items-heading" class="text-xs font-extrabold uppercase tracking-wide text-slate-800">ITEMS (0)</span>
+            <button type="button" id="bill-open-picker-btn" class="text-xs font-bold text-brand-600 hover:text-brand-700 transition">+ Item</button>
           </div>
-          <div id="bill-lines-container" class="p-3 space-y-2.5 bg-white"></div>
+          <div id="bill-lines-empty" class="p-6 text-center text-xs text-slate-500 bg-white">
+            No items added yet. Click <strong>+ Item</strong> above to add items.
+          </div>
+          <div id="bill-lines-container" class="divide-y divide-slate-100 bg-white hidden"></div>
+          <div id="bill-items-subtotal-bar" class="hidden px-4 py-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs font-extrabold text-slate-900">
+            <span>Item Subtotal</span>
+            <span id="bill-items-subtotal-val">0.00</span>
+          </div>
         </div>
 
         <!-- Totals & Payment -->
@@ -752,7 +792,13 @@
               <label class="block text-xs font-semibold text-slate-700 mb-1">Amount Paid / Received (₹)</label>
               <input id="bill-paid" type="number" step="0.01" min="0" value="0" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm" />
             </div>
-            <button type="button" id="bill-mark-full-paid-btn" class="text-xs font-semibold text-emerald-600 hover:underline">Mark Full Amount Paid</button>
+            <div class="flex items-center justify-between gap-2">
+              <label class="inline-flex items-center gap-2 text-xs font-semibold text-emerald-700 cursor-pointer">
+                <input id="bill-auto-full-paid" type="checkbox" checked class="rounded border-slate-300 text-emerald-600" />
+                <span>Auto Mark Full Paid</span>
+              </label>
+              <button type="button" id="bill-mark-full-paid-btn" class="text-xs font-semibold text-emerald-600 hover:underline">Mark Full Amount Paid</button>
+            </div>
           </div>
           <div class="space-y-1 text-sm">
             <div class="flex justify-between text-slate-600"><span>Subtotal</span><span id="bill-calc-sub">₹0.00</span></div>
@@ -762,28 +808,36 @@
           </div>
         </div>
 
-        <div class="flex justify-end gap-2">
-          <button type="button" data-close-modal="bill-modal" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-sm">Save &amp; Generate Bill</button>
+        <div class="flex items-center justify-between gap-2 pt-1 flex-nowrap">
+          <button type="button" data-close-modal="bill-modal" class="px-3 sm:px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold whitespace-nowrap">Cancel</button>
+          <button type="submit" class="px-4 sm:px-5 py-2.5 rounded-xl border border-brand-600 text-brand-600 hover:bg-indigo-50 text-xs sm:text-sm font-semibold whitespace-nowrap transition">Generate</button>
+          <button type="button" id="bill-save-and-new-btn" class="px-3 sm:px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-semibold whitespace-nowrap shadow-sm transition">Save &amp; New Bill</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- MODAL: PRINT / VIEW INVOICE -->
-  <div id="invoice-print-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 md:p-8 shadow-2xl max-h-[92vh] overflow-y-auto">
-      <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-200 no-print">
-        <span class="text-xs font-bold text-slate-600">Invoice Layout:</span>
+  <div id="invoice-print-modal" class="hidden fixed inset-0 z-[90] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4">
+    <div class="bg-slate-100 sm:rounded-2xl max-w-4xl w-full h-full sm:h-auto sm:max-h-[94vh] shadow-2xl flex flex-col overflow-hidden">
+      <div class="bg-white border-b border-slate-200 text-slate-900 px-4 sm:px-5 py-3.5 flex flex-wrap items-center justify-between gap-2 no-print shrink-0">
+        <div class="flex items-center gap-2">
+          <button type="button" data-close-modal="invoice-print-modal" class="p-1.5 rounded-xl hover:bg-slate-100 text-slate-700" title="Back">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <span class="text-xs sm:text-sm font-bold text-slate-900">Invoice Preview</span>
+        </div>
         <div class="flex flex-wrap items-center gap-1.5" id="modal-layout-switcher">
-          <button type="button" data-modal-layout="classic" class="modal-layout-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-brand-600 text-white">1. Clean Stripe</button>
+          <button type="button" data-modal-layout="classic" class="modal-layout-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-brand-600 text-white">1. Nobel PDF</button>
           <button type="button" data-modal-layout="modern" class="modal-layout-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-700">2. Boxed Grid</button>
           <button type="button" data-modal-layout="thermal" class="modal-layout-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-700">3. Full GST+HSN</button>
           <button type="button" data-modal-layout="compact" class="modal-layout-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-700">4. Gold Border</button>
         </div>
       </div>
-      <div id="invoice-print-body"></div>
-      <div class="mt-6 pt-4 border-t border-slate-200 flex flex-wrap justify-end gap-2.5 no-print">
+      <div class="flex-1 overflow-y-auto p-3 sm:p-6">
+        <div id="invoice-print-body" class="bg-white rounded-xl shadow-md p-4 sm:p-6 max-w-[780px] mx-auto"></div>
+      </div>
+      <div class="bg-white px-5 py-3.5 border-t border-slate-200 flex flex-wrap justify-end gap-2.5 no-print shrink-0">
         <button type="button" id="invoice-wa-btn" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold">Share on WhatsApp</button>
         <button type="button" id="invoice-pdf-btn" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold">Download PDF</button>
         <button type="button" id="invoice-print-btn" class="px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-800 text-xs font-semibold">Print</button>
@@ -824,6 +878,53 @@
           <span>Open WhatsApp</span>
         </a>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ITEM PICKER (MY BILLBOOK STYLE) -->
+  <div id="item-picker-modal" class="hidden fixed inset-0 z-[102] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 no-print">
+    <div class="bg-white sm:rounded-2xl max-w-lg w-full h-full sm:h-auto sm:max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-4 border-b border-slate-200 space-y-3 bg-white shrink-0">
+        <div class="flex items-center gap-2.5">
+          <button type="button" data-close-modal="item-picker-modal" class="p-2 rounded-xl hover:bg-slate-100 text-slate-700" title="Back">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <div class="relative flex-1">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input id="picker-search-input" type="text" placeholder="Search by Item Name" class="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:bg-white" />
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button type="button" id="picker-create-item-btn" class="px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-1.5 transition">
+            <span>+ Create New Item</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="picker-items-list" class="flex-1 overflow-y-auto divide-y divide-slate-100 bg-white"></div>
+
+      <div class="p-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3 shrink-0">
+        <span id="picker-selected-summary" class="text-xs font-semibold text-slate-600">0 items in bill</span>
+        <button type="button" data-close-modal="item-picker-modal" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-sm transition">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: WHITE FILTER PICKER (REPLACES DARK NATIVE SELECTS) -->
+  <div id="filter-picker-modal" class="hidden fixed inset-0 z-[104] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 no-print">
+    <div class="bg-white sm:rounded-2xl max-w-md w-full h-full sm:h-auto sm:max-h-[82vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="bg-white border-b border-slate-200 px-4 py-3.5 flex items-center gap-2.5 shrink-0">
+        <button type="button" data-close-modal="filter-picker-modal" class="p-2 rounded-xl hover:bg-slate-100 text-slate-700" title="Back">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <div>
+          <h3 id="filter-picker-title" class="text-sm sm:text-base font-bold text-slate-900">Select Option</h3>
+          <p class="text-[11px] text-slate-500">Tap an option below to filter</p>
+        </div>
+      </div>
+      <div id="filter-picker-options" class="flex-1 overflow-y-auto divide-y divide-slate-100 bg-white p-2"></div>
     </div>
   </div>
 
@@ -944,7 +1045,7 @@
 
       let state = loadState();
       let activeTab = 'dashboard';
-      let activeReport = 'summary';
+      let activeReport = 'gstr1';
       let scannedItems = [];
       let pendingConfirmAction = null;
       let currentPrintBillId = null;
@@ -1082,14 +1183,14 @@
         const stockValue = state.items.reduce((s, i) => s + (i.stock * (i.purchasePrice || i.salePrice)), 0);
 
         const kpis = [
-          { label: 'Total Sales', value: formatCurrency(totalSales), sub: `${state.bills.filter(b => b.type === 'sale').length} invoices`, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-          { label: 'Total Purchases', value: formatCurrency(totalPurchases), sub: `${state.bills.filter(b => b.type === 'purchase').length} bills`, color: 'text-brand-600', bg: 'bg-indigo-50' },
-          { label: 'To Receive (Parties)', value: formatCurrency(receivable), sub: `${state.parties.filter(p => p.type === 'customer' && p.balance > 0).length} pending`, color: 'text-amber-600', bg: 'bg-amber-50' },
+          { label: 'Total Sales', value: formatCurrency(totalSales), sub: `${state.bills.filter(b => b.type === 'sale').length} invoices · View GSTR-1`, color: 'text-emerald-600', bg: 'bg-emerald-50', gotoReport: 'gstr1' },
+          { label: 'Total Purchases', value: formatCurrency(totalPurchases), sub: `${state.bills.filter(b => b.type === 'purchase').length} bills · View GSTR-2`, color: 'text-brand-600', bg: 'bg-indigo-50', gotoReport: 'gstr2' },
+          { label: 'Reports', value: 'GSTR-1 & 2', sub: 'Sales, Purchase, Stock · Open', color: 'text-amber-600', bg: 'bg-amber-50', gotoReport: 'gstr1' },
           { label: 'Inventory Value', value: formatCurrency(stockValue), sub: `${lowStockItems.length} low stock alerts`, color: lowStockItems.length ? 'text-rose-600' : 'text-slate-700', bg: lowStockItems.length ? 'bg-rose-50' : 'bg-slate-100' }
         ];
 
         document.getElementById('dashboard-kpi-grid').innerHTML = kpis.map(k => `
-          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div ${k.gotoReport ? `data-goto-report="${k.gotoReport}"` : ''} class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm ${k.gotoReport ? 'cursor-pointer hover:border-brand-600 hover:shadow-md transition' : ''}">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs font-semibold text-slate-500">${k.label}</span>
               <span class="w-2.5 h-2.5 rounded-full ${k.bg} ${k.color}"></span>
@@ -1125,12 +1226,7 @@
         const stockFilter = document.getElementById('items-stock-filter').value;
         const catFilter = document.getElementById('items-category-filter').value;
 
-        // Populate category dropdown
-        const catSelect = document.getElementById('items-category-filter');
-        const categories = [...new Set(state.items.map(i => i.category).filter(Boolean))];
-        const currentCat = catSelect.value;
-        catSelect.innerHTML = '<option value="all">All Categories</option>' + categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-        if (categories.includes(currentCat)) catSelect.value = currentCat;
+
 
         const filtered = state.items.filter(i => {
           const matchQ = !q || i.name.toLowerCase().includes(q) || (i.sku || '').toLowerCase().includes(q) || (i.category || '').toLowerCase().includes(q);
@@ -1387,39 +1483,179 @@
           if (preselectedPartyId) partySelect.value = preselectedPartyId;
         }
 
+        document.getElementById('bill-auto-full-paid').checked = true;
         const linesContainer = document.getElementById('bill-lines-container');
         linesContainer.innerHTML = '';
-        addBillLineRow();
+        syncBillLinesVisibility();
         recalcBillTotals();
         openModal('bill-modal');
       }
 
+      const pickerColors = ['bg-emerald-50 text-emerald-700', 'bg-slate-100 text-slate-700', 'bg-indigo-50 text-indigo-700', 'bg-amber-50 text-amber-700', 'bg-rose-50 text-rose-700'];
+
+      function getBillLineQtyForItem(itemId) {
+        let total = 0;
+        document.querySelectorAll('.bill-line-row').forEach(row => {
+          const sel = row.querySelector('.line-item-select');
+          if (sel && sel.value === itemId) {
+            total += parseFloat(row.querySelector('.line-qty').value) || 0;
+          }
+        });
+        return total;
+      }
+
+      function syncBillLinesVisibility() {
+        const container = document.getElementById('bill-lines-container');
+        const subBar = document.getElementById('bill-items-subtotal-bar');
+        const empty = document.getElementById('bill-lines-empty');
+        const heading = document.getElementById('bill-items-heading');
+        const rows = container ? container.querySelectorAll('.bill-line-row') : [];
+        const count = rows.length;
+        if (heading) heading.textContent = `ITEMS (${count})`;
+        if (container) container.classList.toggle('hidden', count === 0);
+        if (subBar) subBar.classList.toggle('hidden', count === 0);
+        if (empty) empty.classList.toggle('hidden', count > 0);
+      }
+
+      function updateLineRowSummary(row) {
+        const qty = parseFloat(row.querySelector('.line-qty').value) || 0;
+        const rate = parseFloat(row.querySelector('.line-rate').value) || 0;
+        const gstPct = parseFloat(row.querySelector('.line-gst').value) || 0;
+        const unit = (row.querySelector('.line-unit').value || 'PCS').toUpperCase();
+        const base = qty * rate;
+        const taxAmt = base * (gstPct / 100);
+        const lineTotal = base + taxAmt;
+
+        row.querySelector('.line-qty-rate-text').textContent = `${qty} ${unit} x ${rate.toFixed(2)}`;
+        row.querySelector('.line-tax-text').textContent = `${gstPct.toFixed(1)}% = ₹ ${Number(taxAmt.toFixed(2)).toLocaleString('en-IN')}`;
+        row.querySelector('.line-total-text').textContent = `₹ ${Number(lineTotal.toFixed(2)).toLocaleString('en-IN')}`;
+      }
+
+      function setBillItemQty(itemId, delta) {
+        const item = state.items.find(i => i.id === itemId);
+        if (!item) return;
+        const billType = document.getElementById('bill-type').value;
+        const rows = Array.from(document.querySelectorAll('.bill-line-row'));
+        let targetRow = rows.find(r => r.querySelector('.line-item-select').value === itemId);
+
+        if (!targetRow && delta > 0) {
+          addBillLineRow();
+          targetRow = document.querySelector('#bill-lines-container .bill-line-row:last-child');
+          targetRow.querySelector('.line-item-select').value = itemId;
+          targetRow.querySelector('.line-item-name').textContent = item.name;
+          targetRow.querySelector('.line-unit').value = item.unit || 'PCS';
+          targetRow.querySelector('.line-rate').value = billType === 'sale' ? item.salePrice : (item.purchasePrice || item.salePrice);
+          targetRow.querySelector('.line-gst').value = item.gst ?? 18;
+          targetRow.querySelector('.line-qty').value = delta;
+          updateLineRowSummary(targetRow);
+        } else if (targetRow) {
+          const qtyInput = targetRow.querySelector('.line-qty');
+          const nextQty = (parseFloat(qtyInput.value) || 0) + delta;
+          if (nextQty <= 0) {
+            targetRow.remove();
+          } else {
+            qtyInput.value = nextQty;
+            updateLineRowSummary(targetRow);
+          }
+        }
+        syncBillLinesVisibility();
+        recalcBillTotals();
+        renderItemPicker();
+      }
+
+      function renderItemPicker() {
+        const listEl = document.getElementById('picker-items-list');
+        if (!listEl) return;
+        const q = (document.getElementById('picker-search-input').value || '').toLowerCase().trim();
+        const billType = document.getElementById('bill-type').value;
+        const filtered = state.items.filter(i =>
+          !q || i.name.toLowerCase().includes(q) || (i.sku || '').toLowerCase().includes(q) || (i.category || '').toLowerCase().includes(q)
+        );
+
+        let selectedCount = 0;
+        document.querySelectorAll('.bill-line-row').forEach(r => {
+          if (r.querySelector('.line-item-select').value) selectedCount++;
+        });
+        document.getElementById('picker-selected-summary').textContent = `${selectedCount} item(s) in bill`;
+
+        if (!filtered.length) {
+          listEl.innerHTML = '<div class="p-8 text-center text-xs text-slate-500">No items match your search. Click "+ Create New Item" above.</div>';
+          return;
+        }
+
+        listEl.innerHTML = filtered.map((item, idx) => {
+          const price = billType === 'sale' ? item.salePrice : (item.purchasePrice || item.salePrice);
+          const unitLabel = (item.unit || 'PCS').toUpperCase();
+          const inBillQty = getBillLineQtyForItem(item.id);
+          const badgeCls = pickerColors[idx % pickerColors.length];
+          return `
+            <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50 transition">
+              <div class="flex items-start gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl ${badgeCls} flex items-center justify-center font-bold text-sm shrink-0">${idx + 1}</div>
+                <div class="min-w-0">
+                  <p class="text-xs font-bold text-slate-900 leading-snug">${escapeHtml(item.name)}</p>
+                  <p class="text-xs font-extrabold text-slate-800 mt-1">₹ ${Number(price).toLocaleString('en-IN')}/${escapeHtml(unitLabel)}</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Stock: ${Number(item.stock).toFixed(1)} ${escapeHtml(unitLabel)}</p>
+                </div>
+              </div>
+              <div class="shrink-0">
+                ${inBillQty > 0 ? `
+                  <div class="inline-flex items-center rounded-xl border border-indigo-400 bg-indigo-50/50 overflow-hidden">
+                    <button type="button" data-picker-delta="-1" data-picker-id="${item.id}" class="px-2.5 py-1.5 text-brand-600 font-bold text-sm hover:bg-indigo-100">-</button>
+                    <span class="px-2.5 py-1.5 text-xs font-extrabold text-slate-900">${inBillQty}</span>
+                    <button type="button" data-picker-delta="1" data-picker-id="${item.id}" class="px-2.5 py-1.5 text-brand-600 font-bold text-sm hover:bg-indigo-100">+</button>
+                  </div>
+                ` : `
+                  <button type="button" data-picker-delta="1" data-picker-id="${item.id}" class="px-4 py-1.5 rounded-xl border border-indigo-400 text-brand-600 hover:bg-indigo-50 text-xs font-bold transition">
+                    ADD +
+                  </button>
+                `}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
       function addBillLineRow() {
         const container = document.getElementById('bill-lines-container');
-        const billType = document.getElementById('bill-type').value;
         const row = document.createElement('div');
-        row.className = 'bill-line-row grid grid-cols-12 gap-2 items-center';
-
-        const optionsHtml = '<option value="">-- Select Item --</option>' + state.items.map(i => {
-          const price = billType === 'sale' ? i.salePrice : (i.purchasePrice || i.salePrice);
-          return `<option value="${i.id}" data-rate="${price}" data-gst="${i.gst}" data-unit="${escapeHtml(i.unit)}">${escapeHtml(i.name)} (Stock: ${i.stock})</option>`;
-        }).join('');
+        row.className = 'bill-line-row p-3.5 space-y-2.5';
 
         row.innerHTML = `
-          <div class="col-span-12 sm:col-span-5">
-            <select class="line-item-select w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">${optionsHtml}</select>
+          <input type="hidden" class="line-item-select" value="" />
+          <input type="hidden" class="line-unit" value="PCS" />
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0 flex-1 space-y-1">
+              <p class="line-item-name text-xs font-extrabold uppercase text-slate-900 leading-snug">Item Name</p>
+              <div class="grid grid-cols-12 text-[11px] text-slate-500 max-w-xs">
+                <span class="col-span-5">Qty x Rate</span>
+                <span class="line-qty-rate-text col-span-7 font-medium text-slate-800">1 PCS x 0.00</span>
+                <span class="col-span-5">Tax</span>
+                <span class="line-tax-text col-span-7 font-medium text-slate-800">18.0% = ₹ 0</span>
+              </div>
+            </div>
+            <div class="text-right shrink-0 space-y-1.5">
+              <p class="line-total-text text-sm font-extrabold text-slate-900">₹ 0</p>
+              <button type="button" class="line-edit-toggle-btn px-3.5 py-1 rounded-full border border-slate-200 hover:border-brand-600 text-brand-600 text-[11px] font-bold transition">EDIT</button>
+            </div>
           </div>
-          <div class="col-span-4 sm:col-span-2">
-            <input type="number" min="1" value="1" class="line-qty w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs" placeholder="Qty" />
-          </div>
-          <div class="col-span-4 sm:col-span-2">
-            <input type="number" step="0.01" min="0" value="0" class="line-rate w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs" placeholder="Rate" />
-          </div>
-          <div class="col-span-3 sm:col-span-2">
-            <input type="number" min="0" max="28" value="18" class="line-gst w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs" placeholder="GST%" />
-          </div>
-          <div class="col-span-1 text-right">
-            <button type="button" class="remove-line-btn text-rose-500 hover:text-rose-700 font-bold text-sm px-1">&times;</button>
+
+          <div class="line-edit-panel hidden bg-slate-50 border border-slate-200 rounded-xl p-3 grid grid-cols-12 gap-2 items-end">
+            <div class="col-span-4 sm:col-span-3">
+              <label class="block text-[10px] font-bold text-slate-500 mb-1">Qty</label>
+              <input type="number" min="1" value="1" class="line-qty w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs" />
+            </div>
+            <div class="col-span-4 sm:col-span-4">
+              <label class="block text-[10px] font-bold text-slate-500 mb-1">Rate (₹)</label>
+              <input type="number" step="0.01" min="0" value="0" class="line-rate w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs" />
+            </div>
+            <div class="col-span-4 sm:col-span-3">
+              <label class="block text-[10px] font-bold text-slate-500 mb-1">GST (%)</label>
+              <input type="number" min="0" max="28" value="18" class="line-gst w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs" />
+            </div>
+            <div class="col-span-12 sm:col-span-2 flex justify-end gap-1.5">
+              <button type="button" class="remove-line-btn px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold">Remove</button>
+            </div>
           </div>
         `;
         container.appendChild(row);
@@ -1429,6 +1665,7 @@
         let sub = 0;
         let gst = 0;
         document.querySelectorAll('.bill-line-row').forEach(row => {
+          updateLineRowSummary(row);
           const qty = parseFloat(row.querySelector('.line-qty').value) || 0;
           const rate = parseFloat(row.querySelector('.line-rate').value) || 0;
           const gstPct = parseFloat(row.querySelector('.line-gst').value) || 0;
@@ -1437,8 +1674,16 @@
           gst += lineSub * (gstPct / 100);
         });
         const total = sub + gst;
-        const paid = parseFloat(document.getElementById('bill-paid').value) || 0;
+        const autoFull = document.getElementById('bill-auto-full-paid');
+        const paidInput = document.getElementById('bill-paid');
+        if (autoFull && autoFull.checked) {
+          paidInput.value = total.toFixed(2);
+        }
+        const paid = parseFloat(paidInput.value) || 0;
         const due = Math.max(0, total - paid);
+
+        const subBarVal = document.getElementById('bill-items-subtotal-val');
+        if (subBarVal) subBarVal.textContent = total.toFixed(2);
 
         document.getElementById('bill-calc-sub').textContent = formatCurrency(sub);
         document.getElementById('bill-calc-gst').textContent = formatCurrency(gst);
@@ -1517,7 +1762,7 @@
           ? `<div class="flex justify-between"><span>IGST</span><span>${formatCurrency(bill.gstTotal)}</span></div>`
           : `<div class="flex justify-between"><span>CGST</span><span>${formatCurrency(bill.gstTotal / 2)}</span></div><div class="flex justify-between"><span>SGST</span><span>${formatCurrency(bill.gstTotal / 2)}</span></div>`;
 
-        // LAYOUT 2: BOXED GRID (BILL OF SUPPLY - 1000267497.jpg)
+        // LAYOUT 2: BOXED GRID (BILL OF SUPPLY)
         if (layout === 'modern') {
           return `
             <div class="text-slate-900 text-xs space-y-2">
@@ -1609,132 +1854,182 @@
           `;
         }
 
-        // LAYOUT 3: FULL GST + HSN SUMMARY GRID (1000267495.jpg)
+        // LAYOUT 3: EXACT FULL GST + HSN SUMMARY GRID
         if (layout === 'thermal') {
+          const hsnMap = {};
+          bill.items.forEach(it => {
+            const invMatch = state.items.find(x => x.id === it.itemId) || {};
+            const hsn = it.hsn || invMatch.sku || '8205';
+            const base = it.qty * it.rate;
+            const tax = base * (it.gst / 100);
+            const key = `${hsn}__${it.gst}`;
+            if (!hsnMap[key]) hsnMap[key] = { hsn, gst: it.gst, taxable: 0, tax: 0 };
+            hsnMap[key].taxable += base;
+            hsnMap[key].tax += tax;
+          });
+          const hsnRows = Object.values(hsnMap);
+
           return `
-            <div class="text-slate-900 text-xs space-y-2">
+            <div class="bg-white text-slate-900 text-[11px] space-y-2 max-w-[740px] mx-auto p-1 sm:p-2">
               <div class="flex items-center gap-2">
-                <span class="font-extrabold uppercase tracking-wide text-[11px]">${bill.type === 'sale' ? 'TAX INVOICE' : 'PURCHASE BILL'}</span>
-                <span class="border border-slate-300 px-1.5 py-0.5 text-[9px] text-slate-500 uppercase">ORIGINAL FOR RECIPIENT</span>
+                <span class="font-extrabold uppercase tracking-wide text-xs">${bill.type === 'sale' ? 'TAX INVOICE' : 'PURCHASE BILL'}</span>
+                <span class="border border-slate-400 px-2 py-0.5 text-[9px] text-slate-600 uppercase">ORIGINAL FOR RECIPIENT</span>
               </div>
-              <div class="border border-slate-800">
-                <div class="grid grid-cols-1 sm:grid-cols-2 border-b border-slate-800">
-                  <div class="p-3 sm:border-r border-slate-800 flex items-start gap-3">
+              <div class="border border-slate-900">
+                <div class="grid grid-cols-1 sm:grid-cols-2 border-b border-slate-900">
+                  <div class="p-3 sm:border-r border-slate-900 flex items-start gap-3">
                     ${NT_LOGO_SVG}
-                    <div class="text-[10px] space-y-0.5">
+                    <div class="text-[10px] leading-snug space-y-0.5">
                       <h2 class="text-sm font-extrabold text-slate-900">${escapeHtml(s.bizName)}</h2>
-                      <p class="text-slate-600">${escapeHtml(s.address)}</p>
-                      <p><span class="font-bold">GSTIN:</span> ${escapeHtml(s.gstin || '—')} &nbsp; <span class="font-bold">Mobile:</span> ${escapeHtml(s.phone)}</p>
+                      <p class="text-slate-700">${escapeHtml(s.address)}</p>
+                      <div class="grid grid-cols-2 gap-2 pt-0.5">
+                        <div><span class="font-bold">GSTIN:</span><br>${escapeHtml(s.gstin || '—')}</div>
+                        <div><span class="font-bold">Mobile:</span><br>${escapeHtml(s.phone || '—')}</div>
+                      </div>
                       <p><span class="font-bold">PAN Number:</span> ${escapeHtml(s.pan || '—')}</p>
                     </div>
                   </div>
-                  <div class="p-3 flex items-center justify-between text-[10px]">
-                    <div class="border border-dashed border-rose-400 px-2.5 py-1 text-center">
-                      <p class="font-bold text-slate-700">Invoice No.</p>
-                      <p class="font-mono font-bold text-slate-900">${escapeHtml(bill.number)}</p>
+                  <div class="p-3 flex items-center justify-around text-center text-[11px]">
+                    <div>
+                      <p class="font-bold text-slate-800">Invoice No.</p>
+                      <p class="font-semibold text-slate-900 mt-0.5">${escapeHtml(bill.number)}</p>
                     </div>
-                    <div class="text-right">
-                      <p class="font-bold text-slate-700">Invoice Date</p>
-                      <p class="font-semibold text-slate-900">${escapeHtml(bill.date)}</p>
+                    <div>
+                      <p class="font-bold text-slate-800">Invoice Date</p>
+                      <p class="font-semibold text-slate-900 mt-0.5">${escapeHtml(bill.date)}</p>
                     </div>
                   </div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 border-b border-slate-800 text-[10px]">
-                  <div class="p-2.5 sm:border-r border-slate-800 space-y-0.5">
-                    <p class="font-bold text-slate-500 uppercase">BILL TO</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 border-b border-slate-900 text-[10px]">
+                  <div class="p-2.5 sm:border-r border-slate-900 space-y-0.5">
+                    <p class="font-bold text-slate-700 uppercase">BILL TO</p>
                     <p class="font-extrabold text-xs text-slate-900 uppercase">${escapeHtml(bill.partyName)}</p>
-                    <p class="text-slate-600">Address: ${escapeHtml(partyAddress)}</p>
-                    <p class="text-slate-700">GSTIN: ${escapeHtml(partyGstin)}</p>
+                    <p class="text-slate-700">Place of Supply: ${escapeHtml(partyAddress !== '—' ? partyAddress : 'Gujarat')}</p>
                     <p class="text-slate-700">Mobile: ${escapeHtml(bill.partyPhone || '—')}</p>
                   </div>
-                  <div class="p-2.5 text-slate-600">
-                    <p class="font-bold text-slate-500 uppercase">SHIPPING ADDRESS</p>
-                    <p class="mt-0.5">${escapeHtml(partyAddress)}</p>
+                  <div class="p-2.5 space-y-0.5">
+                    <p class="font-bold text-slate-700 uppercase">SHIP TO</p>
+                    <p class="font-extrabold text-xs text-slate-900 uppercase">${escapeHtml(bill.partyName)}</p>
+                    ${partyAddress && partyAddress !== '—' ? `<p class="text-slate-600">${escapeHtml(partyAddress)}</p>` : ''}
                   </div>
                 </div>
-                <div class="overflow-x-auto">
+                <div class="w-full overflow-x-auto">
                   <table class="w-full text-[10px] border-collapse">
                     <thead>
-                      <tr class="bg-slate-200 border-b border-slate-800 text-slate-800">
-                        <th class="py-1.5 px-1.5 border-r border-slate-800 text-center">S.NO.</th>
-                        <th class="py-1.5 px-2 border-r border-slate-800 text-left">ITEMS</th>
-                        <th class="py-1.5 px-1.5 border-r border-slate-800 text-center">QTY.</th>
-                        <th class="py-1.5 px-1.5 border-r border-slate-800 text-right">RATE</th>
-                        <th class="py-1.5 px-1.5 border-r border-slate-800 text-right">TAX</th>
+                      <tr class="bg-slate-200 border-b border-slate-900 text-slate-900 font-bold">
+                        <th class="py-1.5 px-1.5 border-r border-slate-900 text-center w-10">S.NO.</th>
+                        <th class="py-1.5 px-2 border-r border-slate-900 text-left">ITEMS</th>
+                        <th class="py-1.5 px-2 border-r border-slate-900 text-center">HSN</th>
+                        <th class="py-1.5 px-1.5 border-r border-slate-900 text-center">QTY.</th>
+                        <th class="py-1.5 px-2 border-r border-slate-900 text-right">RATE</th>
+                        <th class="py-1.5 px-2 border-r border-slate-900 text-right">TAX</th>
                         <th class="py-1.5 px-2 text-right">AMOUNT</th>
                       </tr>
                     </thead>
                     <tbody>
                       ${bill.items.map((it, idx) => {
+                        const invMatch = state.items.find(x => x.id === it.itemId) || {};
+                        const hsn = it.hsn || invMatch.sku || '8205';
                         const base = it.qty * it.rate;
                         const tax = base * (it.gst / 100);
-                        return `<tr class="border-b border-slate-200">
-                          <td class="py-2 px-1.5 border-r border-slate-800 text-center">${idx + 1}</td>
-                          <td class="py-2 px-2 border-r border-slate-800 font-semibold">${escapeHtml(it.name)}</td>
-                          <td class="py-2 px-1.5 border-r border-slate-800 text-center">${it.qty} ${escapeHtml(it.unit || 'PCS')}</td>
-                          <td class="py-2 px-1.5 border-r border-slate-800 text-right">${formatCurrency(it.rate)}</td>
-                          <td class="py-2 px-1.5 border-r border-slate-800 text-right">${formatCurrency(tax)}<br><span class="text-[9px] text-slate-500">(${it.gst}%)</span></td>
-                          <td class="py-2 px-2 text-right font-bold">${formatCurrency(base + tax)}</td>
+                        return `<tr>
+                          <td class="py-2 px-1.5 border-r border-slate-900 text-center align-top">${idx + 1}</td>
+                          <td class="py-2 px-2 border-r border-slate-900 font-semibold align-top">${escapeHtml(it.name)}</td>
+                          <td class="py-2 px-2 border-r border-slate-900 text-center align-top">${escapeHtml(hsn)}</td>
+                          <td class="py-2 px-1.5 border-r border-slate-900 text-center align-top">${it.qty} ${escapeHtml((it.unit || 'PCS').toUpperCase())}</td>
+                          <td class="py-2 px-2 border-r border-slate-900 text-right align-top">${Number(it.rate).toLocaleString('en-IN')}</td>
+                          <td class="py-2 px-2 border-r border-slate-900 text-right align-top">${Number(tax.toFixed(2)).toLocaleString('en-IN')}<br><span class="text-[9px] text-slate-500">(${it.gst}%)</span></td>
+                          <td class="py-2 px-2 text-right font-semibold align-top">${Number((base + tax).toFixed(2)).toLocaleString('en-IN')}</td>
                         </tr>`;
                       }).join('')}
-                      <tr class="bg-slate-100 border-t border-slate-800 font-extrabold">
-                        <td class="py-1.5 px-1.5 border-r border-slate-800"></td>
-                        <td class="py-1.5 px-2 border-r border-slate-800 text-right">TOTAL</td>
-                        <td class="py-1.5 px-1.5 border-r border-slate-800 text-center">${totalQty}</td>
-                        <td class="py-1.5 px-1.5 border-r border-slate-800"></td>
-                        <td class="py-1.5 px-1.5 border-r border-slate-800 text-right">${formatCurrency(bill.gstTotal)}</td>
+                      <tr class="bg-slate-200 border-t border-slate-900 font-extrabold text-[11px]">
+                        <td class="py-1.5 px-2 border-r border-slate-900 text-right" colspan="3">TOTAL</td>
+                        <td class="py-1.5 px-1.5 border-r border-slate-900 text-center">${totalQty}</td>
+                        <td class="py-1.5 px-2 border-r border-slate-900"></td>
+                        <td class="py-1.5 px-2 border-r border-slate-900 text-right">${formatCurrency(bill.gstTotal)}</td>
                         <td class="py-1.5 px-2 text-right">${formatCurrency(bill.grandTotal)}</td>
                       </tr>
-                      <tr class="border-t border-slate-800 font-bold">
-                        <td class="py-1.5 px-1.5 border-r border-slate-800"></td>
-                        <td class="py-1.5 px-2 border-r border-slate-800 text-right">RECEIVED AMOUNT</td>
-                        <td class="py-1.5 px-1.5 border-r border-slate-800"></td>
-                        <td class="py-1.5 px-1.5 border-r border-slate-800"></td>
-                        <td class="py-1.5 px-1.5 border-r border-slate-800"></td>
+                      <tr class="border-t border-slate-900 font-bold text-[10px]">
+                        <td class="py-1.5 px-2 border-r border-slate-900 text-right" colspan="3">RECEIVED AMOUNT</td>
+                        <td class="py-1.5 px-1.5 border-r border-slate-900"></td>
+                        <td class="py-1.5 px-2 border-r border-slate-900"></td>
+                        <td class="py-1.5 px-2 border-r border-slate-900"></td>
                         <td class="py-1.5 px-2 text-right">${formatCurrency(bill.paid)}</td>
                       </tr>
+                      <tr class="border-t border-slate-900 font-bold text-[10px]">
+                        <td class="py-1.5 px-2 border-r border-slate-900 text-right" colspan="3">BALANCE AMOUNT</td>
+                        <td class="py-1.5 px-1.5 border-r border-slate-900"></td>
+                        <td class="py-1.5 px-2 border-r border-slate-900"></td>
+                        <td class="py-1.5 px-2 border-r border-slate-900"></td>
+                        <td class="py-1.5 px-2 text-right">${formatCurrency(due)}</td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
-                <!-- HSN/SAC Tax Summary Table -->
-                <div class="border-t border-slate-800 overflow-x-auto">
-                  <table class="w-full text-[10px] border-collapse">
-                    <thead>
-                      <tr class="bg-slate-200 border-b border-slate-800 text-slate-800">
-                        <th class="py-1 px-2 border-r border-slate-800 text-left">HSN/SAC</th>
-                        <th class="py-1 px-2 border-r border-slate-800 text-right">Taxable Value</th>
-                        <th class="py-1 px-2 border-r border-slate-800 text-right">${s.taxMode === 'igst' ? 'IGST' : 'CGST + SGST'}</th>
-                        <th class="py-1 px-2 text-right">Total Tax Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+              </div>
+              <div class="border border-slate-900 overflow-x-auto">
+                <table class="w-full text-[10px] border-collapse">
+                  <thead>
+                    <tr class="bg-slate-200 border-b border-slate-900 text-slate-900 font-bold">
+                      <th class="py-1 px-2 border-r border-slate-900 text-center" rowspan="2">HSN/SAC</th>
+                      <th class="py-1 px-2 border-r border-slate-900 text-center" rowspan="2">Taxable Value</th>
+                      ${s.taxMode === 'igst'
+                        ? `<th class="py-1 px-2 border-r border-slate-900 text-center" colspan="2">IGST</th>`
+                        : `<th class="py-1 px-2 border-r border-slate-900 text-center" colspan="2">CGST</th>
+                           <th class="py-1 px-2 border-r border-slate-900 text-center" colspan="2">SGST</th>`}
+                      <th class="py-1 px-2 text-center" rowspan="2">Total Tax Amount</th>
+                    </tr>
+                    <tr class="bg-slate-200 border-b border-slate-900 text-slate-900 font-bold">
+                      ${s.taxMode === 'igst'
+                        ? `<th class="py-0.5 px-2 border-r border-slate-900 text-center">Rate</th><th class="py-0.5 px-2 border-r border-slate-900 text-center">Amount</th>`
+                        : `<th class="py-0.5 px-2 border-r border-slate-900 text-center">Rate</th><th class="py-0.5 px-2 border-r border-slate-900 text-center">Amount</th>
+                           <th class="py-0.5 px-2 border-r border-slate-900 text-center">Rate</th><th class="py-0.5 px-2 border-r border-slate-900 text-center">Amount</th>`}
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-200">
+                    ${hsnRows.map(r => `
                       <tr>
-                        <td class="py-1 px-2 border-r border-slate-800">8205 / Tools</td>
-                        <td class="py-1 px-2 border-r border-slate-800 text-right">${formatCurrency(bill.subtotal)}</td>
-                        <td class="py-1 px-2 border-r border-slate-800 text-right">${formatCurrency(bill.gstTotal)}</td>
-                        <td class="py-1 px-2 text-right font-bold">${formatCurrency(bill.gstTotal)}</td>
+                        <td class="py-1 px-2 border-r border-slate-900 text-center">${escapeHtml(r.hsn)}</td>
+                        <td class="py-1 px-2 border-r border-slate-900 text-right">${Number(r.taxable.toFixed(2)).toLocaleString('en-IN')}</td>
+                        ${s.taxMode === 'igst'
+                          ? `<td class="py-1 px-2 border-r border-slate-900 text-right">${r.gst}%</td><td class="py-1 px-2 border-r border-slate-900 text-right">${Number(r.tax.toFixed(2)).toLocaleString('en-IN')}</td>`
+                          : `<td class="py-1 px-2 border-r border-slate-900 text-right">${r.gst / 2}%</td><td class="py-1 px-2 border-r border-slate-900 text-right">${Number((r.tax / 2).toFixed(2)).toLocaleString('en-IN')}</td>
+                             <td class="py-1 px-2 border-r border-slate-900 text-right">${r.gst / 2}%</td><td class="py-1 px-2 border-r border-slate-900 text-right">${Number((r.tax / 2).toFixed(2)).toLocaleString('en-IN')}</td>`}
+                        <td class="py-1 px-2 text-right font-bold">${formatCurrency(r.tax)}</td>
                       </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div class="p-2 border-t border-slate-800 text-[10px]">
-                  <p class="font-bold">Total Amount (in words)</p>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+              <div class="border border-slate-900">
+                <div class="p-2.5 border-b border-slate-900 text-[10px]">
+                  <p class="font-bold text-slate-900">Total Amount (in words)</p>
                   <p class="text-slate-700">${escapeHtml(words)}</p>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 border-t border-slate-800">
-                  <div class="p-2.5 sm:border-r border-slate-800 text-[10px]">
-                    <p class="font-bold">Notes</p>
-                    <p class="text-slate-600 mt-0.5">${escapeHtml(bill.notes || s.invTerms || '—')}</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2">
+                  <div class="p-2.5 sm:border-r border-slate-900 text-[10px] space-y-0.5">
+                    <p class="font-bold text-slate-900">Bank Details</p>
+                    <div class="grid grid-cols-12"><span class="col-span-4 text-slate-600">Name:</span><span class="col-span-8">${escapeHtml(s.bankHolder || s.bizName || '—')}</span></div>
+                    <div class="grid grid-cols-12"><span class="col-span-4 text-slate-600">IFSC Code:</span><span class="col-span-8">${escapeHtml(s.bankIfsc || '—')}</span></div>
+                    <div class="grid grid-cols-12"><span class="col-span-4 text-slate-600">Account No:</span><span class="col-span-8">${escapeHtml(s.bankAcc || '—')}</span></div>
+                    <div class="grid grid-cols-12"><span class="col-span-4 text-slate-600">Bank:</span><span class="col-span-8">${escapeHtml(s.bankName || '—')}</span></div>
                   </div>
-                  <div class="p-2.5 sm:border-r border-slate-800">${bankBlock}</div>
-                  <div class="p-2.5">${qrBlock}</div>
+                  <div class="p-2.5 flex items-start justify-between gap-3 text-[10px]">
+                    <div>
+                      <p class="font-bold text-slate-900">Payment QR Code</p>
+                      <p class="text-slate-600 mt-0.5">UPI ID:</p>
+                      <p class="font-semibold text-slate-900">${escapeHtml(s.upiId || 'nobeltools@upi')}</p>
+                      <p class="text-[9px] text-slate-500 mt-1 font-semibold">PhonePe &middot; G Pay &middot; Paytm &middot; UPI</p>
+                    </div>
+                    ${s.showUpi !== false ? QR_SVG : ''}
+                  </div>
                 </div>
               </div>
             </div>
           `;
         }
 
-        // LAYOUT 4: GOLD ORNAMENTAL GST BORDER (1000267493.jpg)
+        // LAYOUT 4: GOLD ORNAMENTAL GST BORDER
         if (layout === 'compact') {
           return `
             <div class="border-2 border-amber-500/70 p-4 rounded-sm text-slate-900 text-xs space-y-3 bg-white">
@@ -1834,66 +2129,91 @@
           `;
         }
 
-        // LAYOUT 1: CLEAN STRIPE GST (1000267499.jpg - Default)
+        // LAYOUT 1: EXACT NOBEL TOOLS PDF TEMPLATE
+        const avgGst = bill.items.length ? (bill.items[0].gst || 18) : 18;
+        const halfGst = (avgGst / 2);
+        const taxSummaryRows = s.taxMode === 'igst'
+          ? `<div class="flex justify-between py-0.5"><span>IGST @${avgGst}%</span><span>${formatCurrency(bill.gstTotal)}</span></div>`
+          : `<div class="flex justify-between py-0.5"><span>CGST @${halfGst}%</span><span>${formatCurrency(bill.gstTotal / 2)}</span></div>
+             <div class="flex justify-between py-0.5"><span>SGST @${halfGst}%</span><span>${formatCurrency(bill.gstTotal / 2)}</span></div>`;
+
         return `
-          <div class="text-slate-900 text-xs space-y-3 bg-white">
-            <div class="flex items-center gap-2">
-              <span class="font-extrabold uppercase tracking-wide text-[11px]">${bill.type === 'sale' ? 'TAX INVOICE' : 'PURCHASE BILL'}</span>
-              <span class="border border-slate-300 px-1.5 py-0.5 text-[9px] text-slate-500 uppercase">ORIGINAL FOR RECIPIENT</span>
-            </div>
-            <div class="flex items-start gap-3">
-              ${NT_LOGO_SVG}
-              <div class="text-[10px] space-y-0.5">
-                <h2 class="text-base font-extrabold text-slate-900">${escapeHtml(s.bizName)}</h2>
-                <p class="text-slate-600">${escapeHtml(s.address)}</p>
-                <p><span class="font-bold">Mobile:</span> ${escapeHtml(s.phone)} &nbsp; <span class="font-bold">GSTIN:</span> ${escapeHtml(s.gstin || '—')} &nbsp; <span class="font-bold">PAN Number:</span> ${escapeHtml(s.pan || '—')}</p>
+          <div class="bg-white text-slate-900 text-[11px] leading-relaxed p-2 sm:p-4 max-w-[740px] mx-auto">
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-5">
+              <div class="flex items-start gap-3">
+                ${NT_LOGO_SVG}
+                <div class="text-[11px] leading-snug space-y-0.5">
+                  <h2 class="text-sm font-extrabold text-slate-900">${escapeHtml(s.bizName)}</h2>
+                  <p class="text-slate-700 max-w-[240px]">${escapeHtml(s.address)}</p>
+                  <p class="text-slate-800"><span class="font-bold">GSTIN :</span> ${escapeHtml(s.gstin || '—')}</p>
+                  <p class="text-slate-800"><span class="font-bold">Mobile :</span> ${escapeHtml(s.phone || '—')}</p>
+                  <p class="text-slate-800"><span class="font-bold">PAN Number :</span> ${escapeHtml(s.pan || '—')}</p>
+                </div>
+              </div>
+              <div class="sm:min-w-[250px] space-y-2">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-xs font-extrabold uppercase tracking-wide text-slate-900">${bill.type === 'sale' ? 'TAX INVOICE' : 'PURCHASE BILL'}</span>
+                  <span class="border border-slate-400 px-2 py-0.5 text-[9px] text-slate-600 uppercase">ORIGINAL FOR RECIPIENT</span>
+                </div>
+                <div class="grid grid-cols-12 text-[11px] gap-y-1 pt-1">
+                  <span class="col-span-5 text-slate-700">Invoice No.</span>
+                  <span class="col-span-1 text-center text-slate-500">:</span>
+                  <span class="col-span-6 text-right font-bold text-slate-900">${escapeHtml(bill.number)}</span>
+                  <span class="col-span-5 text-slate-700">Invoice Date</span>
+                  <span class="col-span-1 text-center text-slate-500">:</span>
+                  <span class="col-span-6 text-right font-bold text-slate-900">${escapeHtml(bill.date)}</span>
+                </div>
               </div>
             </div>
-            <div class="bg-slate-100 border-y border-slate-800 px-3 py-1.5 flex items-center justify-between text-[11px]">
-              <div class="border border-dashed border-rose-400 bg-white px-2 py-0.5">
-                <span class="font-bold">Invoice No.:</span> <span class="font-mono">${escapeHtml(bill.number)}</span>
+            <div class="grid grid-cols-2 gap-6 pb-5">
+              <div class="space-y-1">
+                <div class="bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-800 w-36">BILL TO</div>
+                <p class="font-bold text-xs text-slate-900 pt-1">${escapeHtml(bill.partyName)}</p>
+                ${partyAddress && partyAddress !== '—' ? `<p class="text-[10px] text-slate-600">${escapeHtml(partyAddress)}</p>` : ''}
+                ${partyGstin && partyGstin !== '—' ? `<p class="text-[10px] text-slate-700">GSTIN : ${escapeHtml(partyGstin)}</p>` : ''}
+                <p class="text-[10px] text-slate-700">Place of Supply : ${escapeHtml(partyAddress !== '—' ? partyAddress : 'Gujarat')}</p>
               </div>
-              <div><span class="font-bold">Invoice Date:</span> ${escapeHtml(bill.date)}</div>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px]">
-              <div class="space-y-0.5">
-                <p class="font-bold text-slate-500 uppercase">BILL TO</p>
-                <p class="font-extrabold text-xs text-slate-900">${escapeHtml(bill.partyName)}</p>
-                <p class="text-slate-600">${escapeHtml(partyAddress)}</p>
-                <p>Mobile: ${escapeHtml(bill.partyPhone || '—')}</p>
-                <p>GSTIN: ${escapeHtml(partyGstin)}</p>
-              </div>
-              <div class="text-slate-600 sm:pt-4">
-                <p>${escapeHtml(partyAddress)}</p>
+              <div class="space-y-1">
+                <div class="bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-800 w-36">SHIP TO</div>
+                <p class="font-bold text-xs text-slate-900 pt-1">${escapeHtml(bill.partyName)}</p>
+                ${partyAddress && partyAddress !== '—' ? `<p class="text-[10px] text-slate-600">${escapeHtml(partyAddress)}</p>` : ''}
               </div>
             </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-[11px] border-collapse">
+            <div class="w-full overflow-x-auto">
+              <table class="w-full border-collapse text-[11px]">
                 <thead>
-                  <tr class="border-y border-slate-800 text-slate-800 text-left">
-                    <th class="py-1.5 px-2">ITEMS</th>
+                  <tr class="bg-slate-200 text-slate-800 font-bold text-[10px]">
+                    <th class="py-1.5 px-2 text-center w-12">S.NO.</th>
+                    <th class="py-1.5 px-2 text-left">ITEMS</th>
+                    <th class="py-1.5 px-2 text-center">HSN</th>
                     <th class="py-1.5 px-2 text-center">QTY.</th>
                     <th class="py-1.5 px-2 text-right">RATE</th>
                     <th class="py-1.5 px-2 text-right">TAX</th>
                     <th class="py-1.5 px-2 text-right">AMOUNT</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200">
-                  ${bill.items.map(it => {
+                <tbody class="divide-y divide-slate-100">
+                  ${bill.items.map((it, idx) => {
+                    const invMatch = state.items.find(x => x.id === it.itemId) || {};
+                    const hsn = it.hsn || invMatch.sku || '8205';
                     const base = it.qty * it.rate;
                     const tax = base * (it.gst / 100);
-                    return `<tr>
-                      <td class="py-2 px-2 font-semibold">${escapeHtml(it.name)}</td>
-                      <td class="py-2 px-2 text-center">${it.qty} ${escapeHtml(it.unit || 'PCS')}</td>
-                      <td class="py-2 px-2 text-right">${formatCurrency(it.rate)}</td>
-                      <td class="py-2 px-2 text-right">${formatCurrency(tax)} <span class="text-[9px] text-slate-500">(${it.gst}%)</span></td>
-                      <td class="py-2 px-2 text-right font-bold">${formatCurrency(base + tax)}</td>
-                    </tr>`;
+                    return `
+                      <tr>
+                        <td class="py-2.5 px-2 text-center align-top">${idx + 1}</td>
+                        <td class="py-2.5 px-2 font-semibold text-slate-900 align-top">${escapeHtml(it.name)}</td>
+                        <td class="py-2.5 px-2 text-center text-slate-700 align-top">${escapeHtml(hsn)}</td>
+                        <td class="py-2.5 px-2 text-center text-slate-800 align-top">${it.qty} ${escapeHtml((it.unit || 'PCS').toUpperCase())}</td>
+                        <td class="py-2.5 px-2 text-right text-slate-800 align-top">${Number(it.rate).toLocaleString('en-IN')}</td>
+                        <td class="py-2.5 px-2 text-right text-slate-800 align-top">${Number(tax.toFixed(2)).toLocaleString('en-IN')}<br><span class="text-[9px] text-slate-500">(${it.gst}%)</span></td>
+                        <td class="py-2.5 px-2 text-right font-semibold text-slate-900 align-top">${Number((base + tax).toFixed(2)).toLocaleString('en-IN')}</td>
+                      </tr>
+                    `;
                   }).join('')}
                 </tbody>
                 <tfoot>
-                  <tr class="bg-slate-100 border-y border-slate-800 font-extrabold">
-                    <td class="py-1.5 px-2">SUBTOTAL</td>
+                  <tr class="bg-slate-200 font-extrabold text-slate-900 text-[11px]">
+                    <td class="py-1.5 px-2" colspan="3">SUBTOTAL</td>
                     <td class="py-1.5 px-2 text-center">${totalQty}</td>
                     <td class="py-1.5 px-2"></td>
                     <td class="py-1.5 px-2 text-right">${formatCurrency(bill.gstTotal)}</td>
@@ -1902,24 +2222,40 @@
                 </tfoot>
               </table>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <div class="space-y-3">
-                ${bankBlock}
-                ${qrBlock}
-                <div class="text-[10px]">
-                  <p class="font-bold text-slate-800 uppercase">NOTES</p>
-                  <p class="text-slate-600">${escapeHtml(bill.notes || s.invTerms || '—')}</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+              <div class="space-y-4">
+                <div class="text-[10px] leading-snug text-slate-800 space-y-0.5">
+                  <p class="font-extrabold uppercase text-[10px] text-slate-900 mb-1">BANK DETAILS</p>
+                  <div class="grid grid-cols-12"><span class="col-span-4 text-slate-600">Name:</span><span class="col-span-8 font-medium">${escapeHtml(s.bankHolder || s.bizName || '—')}</span></div>
+                  <div class="grid grid-cols-12"><span class="col-span-4 text-slate-600">IFSC Code:</span><span class="col-span-8 font-medium">${escapeHtml(s.bankIfsc || '—')}</span></div>
+                  <div class="grid grid-cols-12"><span class="col-span-4 text-slate-600">Account No:</span><span class="col-span-8 font-medium">${escapeHtml(s.bankAcc || '—')}</span></div>
+                  <div class="grid grid-cols-12"><span class="col-span-4 text-slate-600">Bank:</span><span class="col-span-8 font-medium">${escapeHtml(s.bankName || '—')}</span></div>
                 </div>
+                ${s.showUpi !== false ? `
+                  <div class="flex items-start gap-4 text-[10px] leading-snug text-slate-800">
+                    <div>
+                      <p class="font-extrabold uppercase text-[10px] text-slate-900">PAYMENT QR CODE</p>
+                      <p class="text-slate-600 mt-0.5">UPI ID:</p>
+                      <p class="font-semibold text-slate-900">${escapeHtml(s.upiId || 'nobeltools@upi')}</p>
+                      <p class="text-[9px] text-slate-500 mt-1 font-semibold">PhonePe &middot; G Pay &middot; Paytm &middot; UPI</p>
+                    </div>
+                    ${QR_SVG}
+                  </div>
+                ` : ''}
+                ${bill.notes || s.invTerms ? `<div class="text-[10px] text-slate-600"><span class="font-bold text-slate-800">Notes:</span> ${escapeHtml(bill.notes || s.invTerms)}</div>` : ''}
               </div>
-              <div class="space-y-1 text-[11px]">
-                <div class="flex justify-between"><span>Taxable Amount</span><span>${formatCurrency(bill.subtotal)}</span></div>
-                ${taxRowsRight}
-                <div class="flex justify-between font-extrabold text-xs pt-1 border-t border-slate-300"><span>Total Amount</span><span>${formatCurrency(bill.grandTotal)}</span></div>
-                <div class="flex justify-between text-emerald-700 font-semibold"><span>Received Amount</span><span>${formatCurrency(bill.paid)}</span></div>
-                <div class="flex justify-between text-rose-600 font-bold"><span>Balance Due</span><span>${formatCurrency(due)}</span></div>
-                <div class="pt-2 text-right text-[10px]">
-                  <p class="font-bold">Total Amount (in words)</p>
-                  <p class="text-slate-600">${escapeHtml(words)}</p>
+              <div class="text-[11px] space-y-1">
+                <div class="flex justify-between py-0.5"><span>Taxable Amount</span><span>${formatCurrency(bill.subtotal)}</span></div>
+                ${taxSummaryRows}
+                <div class="flex justify-between py-1.5 border-y border-slate-800 font-extrabold text-xs text-slate-900">
+                  <span>Total Amount</span>
+                  <span>${formatCurrency(bill.grandTotal)}</span>
+                </div>
+                <div class="flex justify-between py-0.5 text-slate-800"><span>Received Amount</span><span>${formatCurrency(bill.paid)}</span></div>
+                ${due > 0.01 ? `<div class="flex justify-between py-0.5 text-rose-600 font-bold"><span>Balance Due</span><span>${formatCurrency(due)}</span></div>` : ''}
+                <div class="pt-3 text-right">
+                  <p class="font-bold text-[10px] text-slate-900">Total Amount (in words)</p>
+                  <p class="text-[11px] text-slate-700">${escapeHtml(words)}</p>
                 </div>
               </div>
             </div>
@@ -1928,9 +2264,24 @@
       }
 
       function openPrintInvoice(billId, overrideLayout) {
-        const bill = state.bills.find(b => b.id === billId);
-        if (!bill) return;
-        currentPrintBillId = billId;
+        const rawBill = state.bills.find(b => String(b.id) === String(billId));
+        if (!rawBill) {
+          showToast('Invoice not found.', 'error');
+          return;
+        }
+        const bill = {
+          ...rawBill,
+          items: Array.isArray(rawBill.items) ? rawBill.items : [],
+          subtotal: Number(rawBill.subtotal) || 0,
+          gstTotal: Number(rawBill.gstTotal) || 0,
+          grandTotal: Number(rawBill.grandTotal) || 0,
+          paid: Number(rawBill.paid) || 0,
+          type: rawBill.type || 'sale',
+          number: rawBill.number || 'INV',
+          date: rawBill.date || '',
+          partyName: rawBill.partyName || 'Customer'
+        };
+        currentPrintBillId = bill.id;
         const layout = overrideLayout || state.settings.invoiceLayout || 'classic';
         document.querySelectorAll('.modal-layout-btn').forEach(btn => {
           const active = btn.dataset.modalLayout === layout;
@@ -2087,6 +2438,109 @@
       }
 
       // REPORTS
+      function getFilteredReportBills(type) {
+        const from = document.getElementById('report-date-from').value;
+        const to = document.getElementById('report-date-to').value;
+        return state.bills.filter(b => {
+          if (type && b.type !== type) return false;
+          if (from && b.date < from) return false;
+          if (to && b.date > to) return false;
+          return true;
+        });
+      }
+
+      function buildGstrTable(list, isSale) {
+        const s = state.settings;
+        const isIgst = s.taxMode === 'igst';
+        const from = document.getElementById('report-date-from').value;
+        const to = document.getElementById('report-date-to').value;
+        const rangeLabel = (from || to) ? `${from || 'Start'} to ${to || 'Today'}` : 'All Dates';
+
+        const taxableSum = list.reduce((sum, b) => sum + b.subtotal, 0);
+        const taxSum = list.reduce((sum, b) => sum + b.gstTotal, 0);
+        const totalSum = list.reduce((sum, b) => sum + b.grandTotal, 0);
+        const cgstSum = isIgst ? 0 : taxSum / 2;
+        const sgstSum = isIgst ? 0 : taxSum / 2;
+        const igstSum = isIgst ? taxSum : 0;
+
+        return `
+          <div class="space-y-4 min-w-[760px]">
+            <div class="text-xs text-slate-800 space-y-0.5">
+              <p class="font-bold text-slate-900">${isSale ? 'GSTR-1' : 'GSTR-2'}</p>
+              <p class="font-extrabold text-sm text-slate-900">${escapeHtml(s.bizName)}</p>
+              <p class="text-[11px] text-slate-600">Mobile: ${escapeHtml(s.phone || '—')}</p>
+              <p class="text-[11px] text-slate-600">GST No: ${escapeHtml(s.gstin || '—')}</p>
+              <p class="text-[11px] font-bold text-slate-800 pt-1">Date Range: ${escapeHtml(rangeLabel)}</p>
+            </div>
+
+            <div>
+              <p class="text-xs font-bold text-slate-800 mb-1.5">${isSale ? 'Sales' : 'Purchases'}</p>
+              <table class="w-full text-[11px] border-collapse border border-slate-300">
+                <thead>
+                  <tr class="bg-slate-100 text-slate-800 font-bold text-left">
+                    <th class="p-2 border border-slate-300" rowspan="2">GSTIN</th>
+                    <th class="p-2 border border-slate-300" rowspan="2">${isSale ? 'Customer Name' : 'Supplier Name'}</th>
+                    <th class="p-1.5 border border-slate-300 text-center" colspan="2">Place of Supply</th>
+                    <th class="p-1.5 border border-slate-300 text-center" colspan="3">${isSale ? 'Invoice Details' : 'Bill Details'}</th>
+                    <th class="p-2 border border-slate-300 text-right" rowspan="2">Total Tax %</th>
+                    <th class="p-2 border border-slate-300 text-right" rowspan="2">Taxable Value</th>
+                    <th class="p-1.5 border border-slate-300 text-center" colspan="3">Amount of Tax</th>
+                  </tr>
+                  <tr class="bg-slate-100 text-slate-700 font-bold text-[10px]">
+                    <th class="p-1.5 border border-slate-300 text-center">State Code</th>
+                    <th class="p-1.5 border border-slate-300">State Name</th>
+                    <th class="p-1.5 border border-slate-300">${isSale ? 'Invoice No.' : 'Bill No.'}</th>
+                    <th class="p-1.5 border border-slate-300">${isSale ? 'Invoice Date' : 'Bill Date'}</th>
+                    <th class="p-1.5 border border-slate-300 text-right">${isSale ? 'Invoice Value' : 'Bill Value'}</th>
+                    <th class="p-1.5 border border-slate-300 text-right">Central Tax Amount</th>
+                    <th class="p-1.5 border border-slate-300 text-right">State/UT Tax Amount</th>
+                    <th class="p-1.5 border border-slate-300 text-right">Integrated Tax Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${list.length ? list.map(b => {
+                    const p = state.parties.find(x => x.id === b.partyId) || {};
+                    const gstin = p.gstin || '';
+                    const stateCode = gstin.length >= 2 ? gstin.slice(0, 2) : '24';
+                    const taxPct = b.subtotal > 0 ? ((b.gstTotal / b.subtotal) * 100).toFixed(1) : '0.0';
+                    const cgst = isIgst ? 0 : (b.gstTotal / 2);
+                    const sgst = isIgst ? 0 : (b.gstTotal / 2);
+                    const igst = isIgst ? b.gstTotal : 0;
+                    return `
+                      <tr data-open-bill="${b.id}" class="hover:bg-indigo-50/60 cursor-pointer transition">
+                        <td class="p-2 border border-slate-300 font-mono text-[10px] text-slate-700">${escapeHtml(gstin)}</td>
+                        <td class="p-2 border border-slate-300 font-medium text-slate-900">${escapeHtml(b.partyName)}</td>
+                        <td class="p-2 border border-slate-300 text-center">${escapeHtml(stateCode)}</td>
+                        <td class="p-2 border border-slate-300">Gujarat</td>
+                        <td class="p-2 border border-slate-300 font-mono text-brand-600 font-semibold">${escapeHtml(b.number)}</td>
+                        <td class="p-2 border border-slate-300">${escapeHtml(b.date)}</td>
+                        <td class="p-2 border border-slate-300 text-right font-semibold">${b.grandTotal.toFixed(1)}</td>
+                        <td class="p-2 border border-slate-300 text-right">${taxPct}</td>
+                        <td class="p-2 border border-slate-300 text-right">${b.subtotal.toFixed(2)}</td>
+                        <td class="p-2 border border-slate-300 text-right">${cgst.toFixed(2)}</td>
+                        <td class="p-2 border border-slate-300 text-right">${sgst.toFixed(2)}</td>
+                        <td class="p-2 border border-slate-300 text-right">${igst.toFixed(1)}</td>
+                      </tr>
+                    `;
+                  }).join('') : `<tr><td colspan="12" class="p-6 text-center text-slate-500 border border-slate-300">No ${isSale ? 'sales' : 'purchase'} records in this date range.</td></tr>`}
+                </tbody>
+                <tfoot>
+                  <tr class="bg-slate-100 font-extrabold text-slate-900">
+                    <td class="p-2 border border-slate-300" colspan="6">Total (${list.length} ${isSale ? 'Invoices' : 'Bills'})</td>
+                    <td class="p-2 border border-slate-300 text-right">${formatCurrency(totalSum)}</td>
+                    <td class="p-2 border border-slate-300"></td>
+                    <td class="p-2 border border-slate-300 text-right">${formatCurrency(taxableSum)}</td>
+                    <td class="p-2 border border-slate-300 text-right">${formatCurrency(cgstSum)}</td>
+                    <td class="p-2 border border-slate-300 text-right">${formatCurrency(sgstSum)}</td>
+                    <td class="p-2 border border-slate-300 text-right">${formatCurrency(igstSum)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
       function renderReports() {
         const container = document.getElementById('report-content');
         document.querySelectorAll('.report-subtab').forEach(btn => {
@@ -2097,50 +2551,80 @@
           btn.classList.toggle('text-slate-700', !active);
         });
 
-        if (activeReport === 'summary') {
-          const sales = state.bills.filter(b => b.type === 'sale');
-          const purchases = state.bills.filter(b => b.type === 'purchase');
-          const sumS = sales.reduce((s, b) => s + b.grandTotal, 0);
-          const sumP = purchases.reduce((s, b) => s + b.grandTotal, 0);
-          container.innerHTML = `
-            <h3 class="text-base font-bold text-slate-900 mb-3">Sales &amp; Purchase Summary</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-              <div class="p-3.5 rounded-xl bg-emerald-50"><p class="text-xs text-emerald-700 font-semibold">Total Sales (${sales.length})</p><p class="text-lg font-extrabold text-emerald-900">${formatCurrency(sumS)}</p></div>
-              <div class="p-3.5 rounded-xl bg-indigo-50"><p class="text-xs text-brand-600 font-semibold">Total Purchases (${purchases.length})</p><p class="text-lg font-extrabold text-slate-900">${formatCurrency(sumP)}</p></div>
-              <div class="p-3.5 rounded-xl bg-slate-100"><p class="text-xs text-slate-600 font-semibold">Net Cashflow</p><p class="text-lg font-extrabold text-slate-900">${formatCurrency(sumS - sumP)}</p></div>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-xs text-left">
-                <thead><tr class="border-b border-slate-200 text-slate-500"><th class="py-2">Date</th><th class="py-2">Invoice #</th><th class="py-2">Type</th><th class="py-2">Party</th><th class="py-2 text-right">Total</th></tr></thead>
-                <tbody class="divide-y divide-slate-100">
-                  ${state.bills.map(b => `<tr data-open-bill="${b.id}" class="hover:bg-indigo-50/60 cursor-pointer transition"><td class="py-2">${escapeHtml(b.date)}</td><td class="py-2 font-mono font-semibold text-brand-600">${escapeHtml(b.number)}</td><td class="py-2 uppercase">${escapeHtml(b.type)}</td><td class="py-2">${escapeHtml(b.partyName)}</td><td class="py-2 text-right font-bold">${formatCurrency(b.grandTotal)}</td></tr>`).join('')}
-                </tbody>
-              </table>
-            </div>
-          `;
+        if (activeReport === 'gstr1') {
+          container.innerHTML = buildGstrTable(getFilteredReportBills('sale'), true);
+        } else if (activeReport === 'gstr2') {
+          container.innerHTML = buildGstrTable(getFilteredReportBills('purchase'), false);
         } else if (activeReport === 'gst') {
-          const outGst = state.bills.filter(b => b.type === 'sale').reduce((s, b) => s + b.gstTotal, 0);
-          const inGst = state.bills.filter(b => b.type === 'purchase').reduce((s, b) => s + b.gstTotal, 0);
+          const outGst = getFilteredReportBills('sale').reduce((s, b) => s + b.gstTotal, 0);
+          const inGst = getFilteredReportBills('purchase').reduce((s, b) => s + b.gstTotal, 0);
           container.innerHTML = `
-            <h3 class="text-base font-bold text-slate-900 mb-3">GST Tax Summary</h3>
+            <h3 class="text-base font-bold text-slate-900 mb-3">GST Tax Summary (GSTR-3B Overview)</h3>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div class="p-4 rounded-xl bg-slate-50 border border-slate-200"><p class="text-xs text-slate-500">Output GST (Sales)</p><p class="text-lg font-extrabold text-slate-900">${formatCurrency(outGst)}</p></div>
-              <div class="p-4 rounded-xl bg-slate-50 border border-slate-200"><p class="text-xs text-slate-500">Input Tax Credit (Purchases)</p><p class="text-lg font-extrabold text-emerald-700">${formatCurrency(inGst)}</p></div>
+              <div class="p-4 rounded-xl bg-slate-50 border border-slate-200"><p class="text-xs text-slate-500">Output GST (GSTR-1 Sales)</p><p class="text-lg font-extrabold text-slate-900">${formatCurrency(outGst)}</p></div>
+              <div class="p-4 rounded-xl bg-slate-50 border border-slate-200"><p class="text-xs text-slate-500">Input Tax Credit (GSTR-2 Purchases)</p><p class="text-lg font-extrabold text-emerald-700">${formatCurrency(inGst)}</p></div>
               <div class="p-4 rounded-xl bg-indigo-50 border border-indigo-100"><p class="text-xs text-brand-600">Net GST Payable</p><p class="text-lg font-extrabold text-slate-900">${formatCurrency(Math.max(0, outGst - inGst))}</p></div>
             </div>
           `;
         } else if (activeReport === 'stock') {
-          const totalUnits = state.items.reduce((s, i) => s + i.stock, 0);
-          const totalVal = state.items.reduce((s, i) => s + i.stock * (i.purchasePrice || i.salePrice), 0);
+          const s = state.settings;
+          const totalUnits = state.items.reduce((sum, i) => sum + i.stock, 0);
+          const totalVal = state.items.reduce((sum, i) => sum + i.stock * (i.purchasePrice || i.salePrice), 0);
           container.innerHTML = `
-            <h3 class="text-base font-bold text-slate-900 mb-3">Stock Valuation (${totalUnits} units &middot; ${formatCurrency(totalVal)})</h3>
-            <div class="overflow-x-auto">
-              <table class="w-full text-xs text-left">
-                <thead><tr class="border-b border-slate-200 text-slate-500"><th class="py-2">Item</th><th class="py-2">Category</th><th class="py-2 text-right">Stock</th><th class="py-2 text-right">Purchase Rate</th><th class="py-2 text-right">Stock Value</th></tr></thead>
-                <tbody class="divide-y divide-slate-100">
-                  ${state.items.map(i => `<tr><td class="py-2 font-semibold">${escapeHtml(i.name)}</td><td class="py-2">${escapeHtml(i.category || 'General')}</td><td class="py-2 text-right">${i.stock} ${escapeHtml(i.unit)}</td><td class="py-2 text-right">${formatCurrency(i.purchasePrice || i.salePrice)}</td><td class="py-2 text-right font-bold">${formatCurrency(i.stock * (i.purchasePrice || i.salePrice))}</td></tr>`).join('')}
-                </tbody>
-              </table>
+            <div class="space-y-4 min-w-[700px]">
+              <div class="text-xs text-slate-800 space-y-0.5">
+                <p class="font-bold text-slate-900">Stock Valuation Report</p>
+                <p class="font-extrabold text-sm text-slate-900">${escapeHtml(s.bizName)}</p>
+                <p class="text-[11px] text-slate-600">Mobile: ${escapeHtml(s.phone || '—')}</p>
+                <p class="text-[11px] text-slate-600">GST No: ${escapeHtml(s.gstin || '—')}</p>
+                <p class="text-[11px] font-bold text-slate-800 pt-1">As on: ${new Date().toISOString().slice(0, 10)}</p>
+              </div>
+
+              <div>
+                <p class="text-xs font-bold text-slate-800 mb-1.5">Inventory Stock Valuation</p>
+                <table class="w-full text-[11px] border-collapse border border-slate-300">
+                  <thead>
+                    <tr class="bg-slate-100 text-slate-800 font-bold text-left">
+                      <th class="p-2 border border-slate-300 text-center w-12">S.No.</th>
+                      <th class="p-2 border border-slate-300">Item Name</th>
+                      <th class="p-2 border border-slate-300 text-center">SKU / HSN</th>
+                      <th class="p-2 border border-slate-300">Category</th>
+                      <th class="p-2 border border-slate-300 text-center">Unit</th>
+                      <th class="p-2 border border-slate-300 text-right">Current Stock</th>
+                      <th class="p-2 border border-slate-300 text-right">Purchase Rate</th>
+                      <th class="p-2 border border-slate-300 text-right">Sale Price</th>
+                      <th class="p-2 border border-slate-300 text-right">Stock Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${state.items.length ? state.items.map((i, idx) => {
+                      const purRate = i.purchasePrice || i.salePrice;
+                      const val = i.stock * purRate;
+                      return `
+                        <tr class="hover:bg-slate-50">
+                          <td class="p-2 border border-slate-300 text-center">${idx + 1}</td>
+                          <td class="p-2 border border-slate-300 font-semibold text-slate-900">${escapeHtml(i.name)}</td>
+                          <td class="p-2 border border-slate-300 font-mono text-center text-slate-700">${escapeHtml(i.sku || '—')}</td>
+                          <td class="p-2 border border-slate-300 text-slate-700">${escapeHtml(i.category || 'General')}</td>
+                          <td class="p-2 border border-slate-300 text-center">${escapeHtml(i.unit || 'Pcs')}</td>
+                          <td class="p-2 border border-slate-300 text-right font-semibold ${i.stock <= i.lowStock ? 'text-rose-600' : 'text-slate-900'}">${i.stock}</td>
+                          <td class="p-2 border border-slate-300 text-right">${formatCurrency(purRate)}</td>
+                          <td class="p-2 border border-slate-300 text-right">${formatCurrency(i.salePrice)}</td>
+                          <td class="p-2 border border-slate-300 text-right font-bold text-slate-900">${formatCurrency(val)}</td>
+                        </tr>
+                      `;
+                    }).join('') : '<tr><td colspan="9" class="p-6 text-center text-slate-500 border border-slate-300">No items in inventory.</td></tr>'}
+                  </tbody>
+                  <tfoot>
+                    <tr class="bg-slate-100 font-extrabold text-slate-900">
+                      <td class="p-2 border border-slate-300" colspan="5">Total (${state.items.length} Items)</td>
+                      <td class="p-2 border border-slate-300 text-right">${totalUnits}</td>
+                      <td class="p-2 border border-slate-300" colspan="2"></td>
+                      <td class="p-2 border border-slate-300 text-right">${formatCurrency(totalVal)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             </div>
           `;
         } else {
@@ -2158,15 +2642,93 @@
         }
       }
 
+      function getActiveReportDataset() {
+        const isIgst = state.settings.taxMode === 'igst';
+        if (activeReport === 'stock') {
+          return {
+            baseName: 'Nobel-Tools-Stock-Valuation',
+            sheetName: 'Stock Valuation',
+            headers: ['Item Name', 'SKU / HSN', 'Category', 'Stock', 'Unit', 'Purchase Rate', 'Sale Price', 'Stock Value'],
+            rows: state.items.map(i => [
+              i.name, i.sku || '', i.category || 'General', i.stock, i.unit || 'Pcs',
+              Number((i.purchasePrice || i.salePrice).toFixed(2)), Number(i.salePrice.toFixed(2)),
+              Number((i.stock * (i.purchasePrice || i.salePrice)).toFixed(2))
+            ])
+          };
+        }
+        if (activeReport === 'parties') {
+          return {
+            baseName: 'Nobel-Tools-Party-Ledger',
+            sheetName: 'Party Ledger',
+            headers: ['Party Name', 'Type', 'Phone', 'GSTIN', 'Address', 'Balance'],
+            rows: state.parties.map(p => [
+              p.name, p.type, p.phone || '', p.gstin || '', p.address || '', Number((p.balance || 0).toFixed(2))
+            ])
+          };
+        }
+        if (activeReport === 'gst') {
+          const outGst = state.bills.filter(b => b.type === 'sale').reduce((s, b) => s + b.gstTotal, 0);
+          const inGst = state.bills.filter(b => b.type === 'purchase').reduce((s, b) => s + b.gstTotal, 0);
+          return {
+            baseName: 'Nobel-Tools-GST-Summary',
+            sheetName: 'GST Summary',
+            headers: ['Particulars', 'Amount (INR)'],
+            rows: [
+              ['Output GST (GSTR-1 Sales)', Number(outGst.toFixed(2))],
+              ['Input Tax Credit (GSTR-2 Purchases)', Number(inGst.toFixed(2))],
+              ['Net GST Payable', Number(Math.max(0, outGst - inGst).toFixed(2))]
+            ]
+          };
+        }
+        const isGstr1 = activeReport === 'gstr1';
+        const isGstr2 = activeReport === 'gstr2';
+        const targetBills = isGstr1
+          ? state.bills.filter(b => b.type === 'sale')
+          : isGstr2
+            ? state.bills.filter(b => b.type === 'purchase')
+            : state.bills;
+        const baseName = isGstr1 ? 'Nobel-Tools-GSTR1-Sales' : isGstr2 ? 'Nobel-Tools-GSTR2-Purchase' : 'Nobel-Tools-Bills-Report';
+        const sheetName = isGstr1 ? 'GSTR-1 Sales' : isGstr2 ? 'GSTR-2 Purchase' : 'Bills';
+
+        return {
+          baseName,
+          sheetName,
+          headers: isIgst
+            ? ['Date', 'Invoice Number', 'Type', 'Party', 'GSTIN', 'Taxable Value', 'IGST', 'Total GST', 'Grand Total', 'Paid', 'Balance']
+            : ['Date', 'Invoice Number', 'Type', 'Party', 'GSTIN', 'Taxable Value', 'CGST', 'SGST', 'Total GST', 'Grand Total', 'Paid', 'Balance'],
+          rows: targetBills.map(b => {
+            const p = state.parties.find(x => x.id === b.partyId) || {};
+            const baseCols = [b.date, b.number, b.type.toUpperCase(), b.partyName, p.gstin || 'Unregistered', Number(b.subtotal.toFixed(2))];
+            const taxCols = isIgst
+              ? [Number(b.gstTotal.toFixed(2))]
+              : [Number((b.gstTotal / 2).toFixed(2)), Number((b.gstTotal / 2).toFixed(2))];
+            return [...baseCols, ...taxCols, Number(b.gstTotal.toFixed(2)), Number(b.grandTotal.toFixed(2)), Number(b.paid.toFixed(2)), Number(Math.max(0, b.grandTotal - b.paid).toFixed(2))];
+          })
+        };
+      }
+
+      function exportReportExcel() {
+        const ds = getActiveReportDataset();
+        if (typeof XLSX !== 'undefined') {
+          const ws = XLSX.utils.aoa_to_sheet([ds.headers, ...ds.rows]);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, ds.sheetName);
+          XLSX.writeFile(wb, ds.baseName + '.xlsx');
+          showToast(`Downloaded ${ds.baseName}.xlsx!`);
+        } else {
+          exportBillsCSV();
+        }
+      }
+
       function exportBillsCSV() {
-        const header = ['Date', 'Invoice Number', 'Type', 'Party', 'Subtotal', 'GST', 'Grand Total', 'Paid', 'Balance'];
-        const rows = state.bills.map(b => [
-          b.date, b.number, b.type, `"${(b.partyName || '').replace(/"/g, '""')}"`,
-          b.subtotal.toFixed(2), b.gstTotal.toFixed(2), b.grandTotal.toFixed(2), b.paid.toFixed(2), Math.max(0, b.grandTotal - b.paid).toFixed(2)
-        ]);
-        const csv = [header.join(','), ...rows.map(r => r.join(','))].join('\n');
-        downloadFile('nobel-tools-bills-report.csv', csv, 'text/csv');
-        showToast('CSV report downloaded!');
+        const ds = getActiveReportDataset();
+        const escapeCsv = v => {
+          const s = String(v == null ? '' : v);
+          return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s;
+        };
+        const csv = [ds.headers.map(escapeCsv).join(','), ...ds.rows.map(r => r.map(escapeCsv).join(','))].join('\n');
+        downloadFile(ds.baseName + '.csv', csv, 'text/csv');
+        showToast(`Downloaded ${ds.baseName}.csv!`);
       }
 
       function downloadFile(filename, content, mime) {
@@ -2183,7 +2745,7 @@
 
       // SETTINGS
       const layoutNames = {
-        classic: '1. Clean Stripe GST',
+        classic: '1. Nobel PDF (Exact)',
         modern: '2. Boxed Grid',
         thermal: '3. Full GST + HSN',
         compact: '4. Gold Border GST'
@@ -2333,6 +2895,9 @@
         saveState();
         closeModal('item-modal');
         renderAll();
+        if (!document.getElementById('item-picker-modal').classList.contains('hidden')) {
+          renderItemPicker();
+        }
       });
 
       // Items List Delegation
@@ -2424,11 +2989,27 @@
         const type = document.getElementById('bill-type').value;
         document.getElementById('bill-modal-title').textContent = type === 'sale' ? 'Create New Sale Bill' : 'Create New Purchase Bill';
       });
-      document.getElementById('bill-add-line-btn').addEventListener('click', addBillLineRow);
-      document.getElementById('bill-paid').addEventListener('input', recalcBillTotals);
+      document.getElementById('bill-open-picker-btn').addEventListener('click', () => {
+        document.getElementById('picker-search-input').value = '';
+        renderItemPicker();
+        openModal('item-picker-modal');
+      });
+      document.getElementById('picker-search-input').addEventListener('input', renderItemPicker);
+      document.getElementById('picker-create-item-btn').addEventListener('click', () => {
+        openItemModal();
+      });
+      document.getElementById('picker-items-list').addEventListener('click', e => {
+        const btn = e.target.closest('[data-picker-delta]');
+        if (!btn) return;
+        setBillItemQty(btn.dataset.pickerId, parseInt(btn.dataset.pickerDelta, 10));
+      });
+      document.getElementById('bill-paid').addEventListener('input', () => {
+        document.getElementById('bill-auto-full-paid').checked = false;
+        recalcBillTotals();
+      });
+      document.getElementById('bill-auto-full-paid').addEventListener('change', recalcBillTotals);
       document.getElementById('bill-mark-full-paid-btn').addEventListener('click', () => {
-        const totals = recalcBillTotals();
-        document.getElementById('bill-paid').value = totals.total.toFixed(2);
+        document.getElementById('bill-auto-full-paid').checked = true;
         recalcBillTotals();
       });
 
@@ -2446,18 +3027,23 @@
 
       document.getElementById('bill-lines-container').addEventListener('input', recalcBillTotals);
       document.getElementById('bill-lines-container').addEventListener('click', e => {
+        if (e.target.classList.contains('line-edit-toggle-btn')) {
+          const row = e.target.closest('.bill-line-row');
+          const panel = row.querySelector('.line-edit-panel');
+          const isHidden = panel.classList.contains('hidden');
+          panel.classList.toggle('hidden', !isHidden);
+          e.target.textContent = isHidden ? 'DONE' : 'EDIT';
+          return;
+        }
         if (e.target.classList.contains('remove-line-btn')) {
-          const rows = document.querySelectorAll('.bill-line-row');
-          if (rows.length > 1) {
-            e.target.closest('.bill-line-row').remove();
-            recalcBillTotals();
-          }
+          e.target.closest('.bill-line-row').remove();
+          syncBillLinesVisibility();
+          recalcBillTotals();
         }
       });
 
-      // Save Bill
-      document.getElementById('bill-form').addEventListener('submit', e => {
-        e.preventDefault();
+      // Save Bill (used by both Generate and Save & New Bill)
+      function saveCurrentBill(andOpenNew) {
         const partyId = document.getElementById('bill-party').value;
         const party = state.parties.find(p => p.id === partyId);
         if (!party) {
@@ -2475,12 +3061,12 @@
           const rate = parseFloat(row.querySelector('.line-rate').value) || 0;
           const gst = parseFloat(row.querySelector('.line-gst').value) || 0;
           if (item && qty > 0) {
-            lineItems.push({ itemId: item.id, name: item.name, qty, rate, gst, unit: item.unit });
+            lineItems.push({ itemId: item.id, name: item.name, hsn: item.sku || '', qty, rate, gst, unit: item.unit });
           }
         });
 
         if (!lineItems.length) {
-          showToast('Please select at least one item.', 'error');
+          showToast('Please add at least one item.', 'error');
           return;
         }
 
@@ -2488,7 +3074,6 @@
         const paid = parseFloat(document.getElementById('bill-paid').value) || 0;
         const due = Math.max(0, totals.total - paid);
 
-        // Update stock
         lineItems.forEach(li => {
           const invItem = state.items.find(i => i.id === li.itemId);
           if (invItem) {
@@ -2498,7 +3083,6 @@
           }
         });
 
-        // Update party balance
         party.balance = (party.balance || 0) + due;
 
         const newBill = {
@@ -2519,14 +3103,35 @@
 
         state.bills.unshift(newBill);
         saveState();
-        closeModal('bill-modal');
         renderAll();
         showToast(`${billType === 'sale' ? 'Sale invoice' : 'Purchase bill'} ${newBill.number} saved!`);
+
+        if (andOpenNew) {
+          openBillModal(billType);
+        } else {
+          closeModal('bill-modal');
+          openPrintInvoice(newBill.id);
+        }
+      }
+
+      document.getElementById('bill-form').addEventListener('submit', e => {
+        e.preventDefault();
+        saveCurrentBill(false);
       });
 
-      // Global click delegation to open any bill card/row (Dashboard, Bills, Reports)
+      document.getElementById('bill-save-and-new-btn').addEventListener('click', () => {
+        saveCurrentBill(true);
+      });
+
+      // Global click delegation for bill cards & Dashboard GSTR-1 / GSTR-2 KPI cards
       document.addEventListener('click', e => {
         if (e.target.closest('button, a, input, select, textarea')) return;
+        const reportCard = e.target.closest('[data-goto-report]');
+        if (reportCard) {
+          activeReport = reportCard.dataset.gotoReport;
+          switchTab('reports');
+          return;
+        }
         const billCard = e.target.closest('[data-open-bill]');
         if (billCard) {
           openPrintInvoice(billCard.dataset.openBill);
@@ -2583,7 +3188,7 @@
             margin: 8,
             filename,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 794 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
           };
           html2pdf().set(opt).from(el).save().then(() => {
@@ -2775,16 +3380,157 @@
         switchTab('bills');
       });
 
-      // Filters
-      ['items-search', 'items-stock-filter', 'items-category-filter'].forEach(id => {
-        document.getElementById(id).addEventListener('input', renderItems);
+      // White Filter Picker Logic
+      let filterPickerCallback = null;
+      function openFilterPicker(title, options, currentVal, onSelect) {
+        document.getElementById('filter-picker-title').textContent = title;
+        const listEl = document.getElementById('filter-picker-options');
+        listEl.innerHTML = options.map(opt => {
+          const active = String(opt.value) === String(currentVal);
+          return `
+            <button type="button" data-fp-val="${escapeHtml(opt.value)}" data-fp-label="${escapeHtml(opt.label)}" class="w-full px-4 py-3.5 rounded-xl flex items-center justify-between text-left transition ${active ? 'bg-indigo-50 text-brand-600 font-bold' : 'bg-white hover:bg-slate-50 text-slate-800 font-medium'}">
+              <span class="text-sm">${escapeHtml(opt.label)}</span>
+              <span class="w-5 h-5 rounded-full border-2 flex items-center justify-center ${active ? 'border-brand-600 bg-brand-600 text-white' : 'border-slate-300'}">
+                ${active ? '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>' : ''}
+              </span>
+            </button>
+          `;
+        }).join('');
+        filterPickerCallback = onSelect;
+        openModal('filter-picker-modal');
+      }
+
+      document.getElementById('filter-picker-options').addEventListener('click', e => {
+        const btn = e.target.closest('[data-fp-val]');
+        if (!btn) return;
+        const val = btn.dataset.fpVal;
+        const label = btn.dataset.fpLabel;
+        closeModal('filter-picker-modal');
+        if (typeof filterPickerCallback === 'function') {
+          filterPickerCallback(val, label);
+        }
       });
-      ['parties-search', 'parties-type-filter'].forEach(id => {
-        document.getElementById(id).addEventListener('input', renderParties);
+
+      function setFilterBtnLabel(btnId, label) {
+        const btn = document.getElementById(btnId);
+        if (btn) btn.querySelector('span').textContent = label;
+      }
+
+      function applyDatePreset(v) {
+        const now = new Date();
+        const fmt = d => {
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${y}-${m}-${day}`;
+        };
+        const qStartMonth = Math.floor(now.getMonth() / 3) * 3;
+        if (v === 'all') {
+          document.getElementById('report-date-from').value = '';
+          document.getElementById('report-date-to').value = '';
+        } else if (v === 'this_month') {
+          document.getElementById('report-date-from').value = fmt(new Date(now.getFullYear(), now.getMonth(), 1));
+          document.getElementById('report-date-to').value = fmt(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+        } else if (v === 'last_month') {
+          document.getElementById('report-date-from').value = fmt(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+          document.getElementById('report-date-to').value = fmt(new Date(now.getFullYear(), now.getMonth(), 0));
+        } else if (v === 'this_quarter') {
+          document.getElementById('report-date-from').value = fmt(new Date(now.getFullYear(), qStartMonth, 1));
+          document.getElementById('report-date-to').value = fmt(new Date(now.getFullYear(), qStartMonth + 3, 0));
+        } else if (v === 'last_quarter') {
+          document.getElementById('report-date-from').value = fmt(new Date(now.getFullYear(), qStartMonth - 3, 1));
+          document.getElementById('report-date-to').value = fmt(new Date(now.getFullYear(), qStartMonth, 0));
+        } else if (v === 'last_year') {
+          document.getElementById('report-date-from').value = fmt(new Date(now.getFullYear() - 1, 0, 1));
+          document.getElementById('report-date-to').value = fmt(new Date(now.getFullYear() - 1, 11, 31));
+        } else if (v === 'last_365') {
+          document.getElementById('report-date-from').value = fmt(new Date(Date.now() - 365 * 86400000));
+          document.getElementById('report-date-to').value = fmt(now);
+        }
+        if (v !== 'custom') renderReports();
+      }
+
+      document.getElementById('bills-type-filter-btn').addEventListener('click', () => {
+        openFilterPicker('Select Bill Type', [
+          { value: 'all', label: 'All Types' },
+          { value: 'sale', label: 'Sale Bills' },
+          { value: 'purchase', label: 'Purchase Bills' }
+        ], document.getElementById('bills-type-filter').value, (val, label) => {
+          document.getElementById('bills-type-filter').value = val;
+          setFilterBtnLabel('bills-type-filter-btn', label);
+          renderBills();
+        });
       });
-      ['bills-search', 'bills-type-filter', 'bills-status-filter'].forEach(id => {
-        document.getElementById(id).addEventListener('input', renderBills);
+
+      document.getElementById('bills-status-filter-btn').addEventListener('click', () => {
+        openFilterPicker('Select Payment Status', [
+          { value: 'all', label: 'All Status' },
+          { value: 'paid', label: 'Paid' },
+          { value: 'partial', label: 'Partial' },
+          { value: 'unpaid', label: 'Unpaid' }
+        ], document.getElementById('bills-status-filter').value, (val, label) => {
+          document.getElementById('bills-status-filter').value = val;
+          setFilterBtnLabel('bills-status-filter-btn', label);
+          renderBills();
+        });
       });
+
+      document.getElementById('parties-type-filter-btn').addEventListener('click', () => {
+        openFilterPicker('Select Party Filter', [
+          { value: 'all', label: 'All Parties' },
+          { value: 'customer', label: 'Customers' },
+          { value: 'supplier', label: 'Suppliers' },
+          { value: 'due', label: 'With Pending Balance' }
+        ], document.getElementById('parties-type-filter').value, (val, label) => {
+          document.getElementById('parties-type-filter').value = val;
+          setFilterBtnLabel('parties-type-filter-btn', label);
+          renderParties();
+        });
+      });
+
+      document.getElementById('items-stock-filter-btn').addEventListener('click', () => {
+        openFilterPicker('Select Stock Filter', [
+          { value: 'all', label: 'All Items' },
+          { value: 'low', label: 'Low Stock' },
+          { value: 'out', label: 'Out of Stock' }
+        ], document.getElementById('items-stock-filter').value, (val, label) => {
+          document.getElementById('items-stock-filter').value = val;
+          setFilterBtnLabel('items-stock-filter-btn', label);
+          renderItems();
+        });
+      });
+
+      document.getElementById('items-category-filter-btn').addEventListener('click', () => {
+        const categories = [...new Set(state.items.map(i => i.category).filter(Boolean))];
+        const opts = [{ value: 'all', label: 'All Categories' }, ...categories.map(c => ({ value: c, label: c }))];
+        openFilterPicker('Select Category', opts, document.getElementById('items-category-filter').value, (val, label) => {
+          document.getElementById('items-category-filter').value = val;
+          setFilterBtnLabel('items-category-filter-btn', label);
+          renderItems();
+        });
+      });
+
+      document.getElementById('report-date-preset-btn').addEventListener('click', () => {
+        openFilterPicker('Select Date Range', [
+          { value: 'all', label: 'All Time' },
+          { value: 'this_month', label: 'This Month' },
+          { value: 'last_month', label: 'Last Month' },
+          { value: 'this_quarter', label: 'This Quarter' },
+          { value: 'last_quarter', label: 'Last Quarter' },
+          { value: 'last_year', label: 'Last Year' },
+          { value: 'last_365', label: 'Last 365 Days' },
+          { value: 'custom', label: 'Custom' }
+        ], document.getElementById('report-date-preset').value, (val, label) => {
+          document.getElementById('report-date-preset').value = val;
+          setFilterBtnLabel('report-date-preset-btn', label);
+          applyDatePreset(val);
+        });
+      });
+
+      // Search Inputs
+      document.getElementById('items-search').addEventListener('input', renderItems);
+      document.getElementById('parties-search').addEventListener('input', renderParties);
+      document.getElementById('bills-search').addEventListener('input', renderBills);
 
       // Reports
       document.querySelectorAll('.report-subtab').forEach(btn => {
@@ -2793,7 +3539,48 @@
           renderReports();
         });
       });
+      document.getElementById('report-export-pdf-btn').addEventListener('click', () => {
+        const el = document.getElementById('report-content');
+        const ds = getActiveReportDataset();
+        const filename = ds.baseName + '.pdf';
+        if (typeof html2pdf !== 'undefined') {
+          html2pdf().set({
+            margin: 8,
+            filename,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1024 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+          }).from(el).save().then(() => showToast(`Downloaded ${filename}!`));
+        } else {
+          try { window.print(); } catch (e) {}
+        }
+      });
+      document.getElementById('report-export-xlsx-btn').addEventListener('click', exportReportExcel);
+      document.getElementById('report-export-json-btn').addEventListener('click', () => {
+        const ds = getActiveReportDataset();
+        downloadFile(ds.baseName + '.json', JSON.stringify({ headers: ds.headers, rows: ds.rows }, null, 2), 'application/json');
+        showToast(`Downloaded ${ds.baseName}.json!`);
+      });
       document.getElementById('report-export-csv-btn').addEventListener('click', exportBillsCSV);
+      document.getElementById('report-share-wa-btn').addEventListener('click', () => {
+        const ds = getActiveReportDataset();
+        const summaryLines = ds.rows.slice(0, 10).map(r => `• ${r[0]} | ${r[1]} | ${r[3]}: ₹${r[r.length - 3] || r[r.length - 1]}`).join('\n');
+        const msg = `*${state.settings.bizName}* - ${ds.sheetName} Report\n` +
+          `Total Records: ${ds.rows.length}\n\n` +
+          (summaryLines || 'No records') +
+          (ds.rows.length > 10 ? `\n...and ${ds.rows.length - 10} more.` : '');
+        openWhatsApp('', msg);
+      });
+      document.getElementById('report-date-from').addEventListener('change', () => {
+        document.getElementById('report-date-preset').value = 'custom'; setFilterBtnLabel('report-date-preset-btn', 'Custom');
+      });
+      document.getElementById('report-date-to').addEventListener('change', () => {
+        document.getElementById('report-date-preset').value = 'custom'; setFilterBtnLabel('report-date-preset-btn', 'Custom');
+      });
+      document.getElementById('report-date-go-btn').addEventListener('click', () => {
+        renderReports();
+        showToast('Report filtered by selected date range!');
+      });
 
       // Settings & Backup
       document.getElementById('settings-form').addEventListener('submit', e => {
