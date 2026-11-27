@@ -178,9 +178,8 @@
         </button>
       </div>
 
-      <!-- Summary Metric Cards (Display-only cards, no Collect/Pay action buttons) -->
+      <!-- Summary Metric Cards -->
       <div class="grid grid-cols-2 gap-3">
-        <!-- To Collect (Light Green Card) -->
         <div onclick="switchTab('parties')" class="bg-[#eefaf1] border border-[#b7e4c7] shadow-2xs p-3.5 md:p-4 rounded-xl flex items-center justify-between cursor-pointer hover:brightness-[0.99] transition">
           <div>
             <p id="stat-to-collect" class="text-base md:text-lg font-extrabold text-slate-900">₹ 5.81 L</p>
@@ -189,7 +188,6 @@
           <span class="text-[#15803d] font-bold text-lg">›</span>
         </div>
 
-        <!-- To Pay (Light Red/Pink Card) -->
         <div onclick="switchTab('parties')" class="bg-[#fdf2f2] border border-[#f5c2c7] shadow-2xs p-3.5 md:p-4 rounded-xl flex items-center justify-between cursor-pointer hover:brightness-[0.99] transition">
           <div>
             <p id="stat-to-pay" class="text-base md:text-lg font-extrabold text-slate-900">₹ 47.26 L</p>
@@ -198,7 +196,6 @@
           <span class="text-[#dc2626] font-bold text-lg">›</span>
         </div>
 
-        <!-- Stock Value -->
         <div onclick="switchTab('items')" class="bg-white border border-slate-200/90 shadow-2xs p-3.5 md:p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-indigo-300 transition">
           <div>
             <p class="text-sm md:text-base font-bold text-slate-900">Stock Value</p>
@@ -207,7 +204,6 @@
           <span class="text-slate-400 font-bold text-lg">›</span>
         </div>
 
-        <!-- This week's sale -->
         <div onclick="switchTab('more')" class="bg-white border border-slate-200/90 shadow-2xs p-3.5 md:p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-indigo-300 transition">
           <div>
             <p id="stat-week-sale" class="text-base md:text-lg font-extrabold text-slate-900">₹ 0</p>
@@ -216,7 +212,6 @@
           <span class="text-slate-400 font-bold text-lg">›</span>
         </div>
 
-        <!-- Total Balance (Cash + Bank Balance) -->
         <div onclick="switchTab('more')" class="bg-white border border-slate-200/90 shadow-2xs p-3.5 md:p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-indigo-300 transition">
           <div>
             <p class="text-sm md:text-base font-bold text-slate-900">Total Balance</p>
@@ -225,7 +220,6 @@
           <span class="text-slate-400 font-bold text-lg">›</span>
         </div>
 
-        <!-- Reports -->
         <div onclick="switchTab('more')" class="bg-white border border-slate-200/90 shadow-2xs p-3.5 md:p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-indigo-300 transition">
           <div>
             <p class="text-sm md:text-base font-bold text-slate-900">Reports</p>
@@ -283,7 +277,6 @@
 
     <!-- ==================== TAB 3: ITEMS / INVENTORY ==================== -->
     <section id="tab-items" class="tab-section hidden space-y-4">
-      <!-- Top Header with Custom SVG Logo -->
       <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-2xs">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0 p-1.5">
@@ -300,7 +293,7 @@
         </div>
       </div>
 
-      <!-- Filter Pills Row: Low Stock, Select Category, Filter By -->
+      <!-- Filter Pills Row -->
       <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
         <button type="button" onclick="toggleLowStockPill()" id="pill-low-stock" class="px-3.5 py-2 rounded-full text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:border-indigo-400 transition shrink-0 cursor-pointer">
           Low Stock
@@ -539,13 +532,13 @@
 
           <div class="flex flex-wrap items-center justify-between gap-2 px-1">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Bill Items</span>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3">
               <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
                 <input id="bill-is-gst" type="checkbox" checked onchange="recalculateBillTotals()" class="rounded text-indigo-600" />
                 <span>GST Bill</span>
               </label>
-              <button type="button" onclick="addBillLineRow()" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs rounded-lg cursor-pointer">
-                + Add Row
+              <button type="button" onclick="openItemPickerModal()" class="px-3.5 py-2 bg-[#4f39c9] hover:bg-[#412db5] text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center gap-1.5 cursor-pointer">
+                <span>+ Select Items</span>
               </button>
             </div>
           </div>
@@ -617,9 +610,59 @@
   </div>
 
   <!-- =========================================================
+       MODAL 1B: FULL-SCREEN ITEM PICKER (myBillBook Style)
+       ========================================================= -->
+  <div id="item-picker-modal" class="fixed inset-0 z-[60] hidden bg-white flex flex-col">
+    <!-- Top Search Header -->
+    <div class="px-3 py-2.5 bg-white border-b border-slate-200/80 flex items-center gap-2.5 shrink-0">
+      <button type="button" onclick="closeModal('item-picker-modal')" aria-label="Back to Bill" class="p-2 text-[#4f39c9] hover:bg-indigo-50 rounded-full cursor-pointer shrink-0">
+        <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 12H5M5 12L11 6M5 12L11 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="flex-1 flex items-center gap-2 bg-[#f1f2f6] px-3.5 py-2 rounded-xl">
+        <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 text-slate-500 shrink-0" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+          <path d="M20 20L16.5 16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input id="picker-search" oninput="renderItemPickerList()" type="text" placeholder="Search by Item Name or HSN" class="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none" />
+      </div>
+    </div>
+
+    <!-- + Create New Item Pill Row -->
+    <div class="px-4 py-2.5 bg-white border-b border-slate-100 flex items-center justify-between shrink-0">
+      <span id="picker-mode-badge" class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sale Invoice Items</span>
+      <button type="button" onclick="openItemModal(null, true)" class="px-4 py-1.5 rounded-full bg-[#f4f3f8] hover:bg-indigo-50 text-slate-800 font-semibold text-xs inline-flex items-center gap-1.5 transition cursor-pointer">
+        <span class="text-sm font-bold">+</span>
+        <span>Create New Item</span>
+      </button>
+    </div>
+
+    <!-- Scrollable Item Cards List -->
+    <div id="picker-items-list" class="flex-1 overflow-y-auto divide-y divide-slate-100 pb-36"></div>
+
+    <!-- Sticky Bottom Summary & Generate Bill Bar -->
+    <div class="bg-white border-t border-slate-200 shadow-[0_-4px_16px_rgba(15,23,42,0.06)] shrink-0">
+      <div class="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between text-sm">
+        <span id="picker-summary-count" class="font-semibold text-slate-800">0 items</span>
+        <span id="picker-summary-total" class="font-bold text-slate-900">₹ 0</span>
+      </div>
+      <div class="px-4 py-3 flex items-center justify-between gap-3">
+        <button type="button" onclick="applyItemPickerToBill(false)" class="text-left cursor-pointer">
+          <p class="text-sm font-bold text-[#4f39c9]">Add more details</p>
+          <p class="text-[11px] text-slate-400">Party, Discount, GST, Payment...</p>
+        </button>
+        <button type="button" onclick="applyItemPickerToBill(true)" class="px-6 py-3 rounded-xl bg-[#4f39c9] hover:bg-[#412db5] active:scale-95 text-white font-bold text-sm shadow-md cursor-pointer">
+          Generate Bill
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
        MODAL 2: ADD PARTY
        ========================================================= -->
-  <div id="party-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 flex items-center justify-center p-4">
+  <div id="party-modal" class="fixed inset-0 z-[70] hidden bg-slate-900/60 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
       <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
         <h3 class="font-bold text-base">Add New Party</h3>
@@ -662,7 +705,7 @@
   <!-- =========================================================
        MODAL 3: ADD / EDIT ITEM
        ========================================================= -->
-  <div id="item-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 flex items-center justify-center p-4">
+  <div id="item-modal" class="fixed inset-0 z-[70] hidden bg-slate-900/60 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
       <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
         <h3 id="item-modal-title" class="font-bold text-base">Add Stock Item</h3>
@@ -773,7 +816,6 @@
   <script>
     const STORAGE_KEY = 'nobel_tools_billing_v1';
 
-    // Default sample data matching Nobel Tools items and recent invoices
     const defaultData = {
       business: {
         name: 'Nobel Tools',
@@ -871,6 +913,10 @@
     let activeItemSort = 'DEFAULT';
     let currentPreviewInvoice = null;
     let reopenBillAfterPartySave = false;
+    let reopenPickerAfterItemSave = false;
+
+    // Cart state for the full-screen Item Picker ({ [itemId]: { qty, rate } })
+    let pickerCart = {};
 
     function loadAppState() {
       try {
@@ -928,7 +974,6 @@
       }, 2600);
     }
 
-    // Switch active tab across desktop & mobile navigation
     function switchTab(tabName) {
       document.querySelectorAll('.tab-section').forEach(section => {
         section.classList.add('hidden');
@@ -997,7 +1042,6 @@
         .filter(inv => inv.type === 'SALE' && inv.date >= sevenDaysAgo)
         .reduce((sum, inv) => sum + (Number(inv.grandTotal) || 0), 0);
 
-      // Base ledger figures paired with live transaction activity
       const toCollect = 581000 + salesTotal;
       const toPay = 4726000 + purchaseTotal;
       const netBalance = salesTotal - purchaseTotal;
@@ -1246,7 +1290,8 @@
       }).join('');
     }
 
-    function openItemModal(itemId = null) {
+    function openItemModal(itemId = null, fromPicker = false) {
+      reopenPickerAfterItemSave = fromPicker;
       if (itemId) {
         const it = appState.items.find(x => x.id === itemId);
         if (!it) return;
@@ -1299,8 +1344,199 @@
       saveAppState();
       closeModal('item-modal');
       refreshAllViews();
+
+      // If opened from the Item Picker, refresh picker list and update rate if needed
+      if (!document.getElementById('item-picker-modal').classList.contains('hidden')) {
+        const docType = document.getElementById('bill-doc-type').value;
+        if (pickerCart[itemData.id]) {
+          pickerCart[itemData.id].rate = docType === 'PURCHASE'
+            ? (itemData.purchasePrice || itemData.salePrice || 0)
+            : (itemData.salePrice || 0);
+        }
+        renderItemPickerList();
+      }
+      reopenPickerAfterItemSave = false;
     }
 
+    // =========================================================
+    // FULL-SCREEN ITEM PICKER (myBillBook Style)
+    // =========================================================
+    function openItemPickerModal() {
+      const docType = document.getElementById('bill-doc-type').value;
+      pickerCart = {};
+
+      // Sync existing bill rows into pickerCart
+      document.querySelectorAll('.bill-line-row').forEach(row => {
+        const itemId = row.querySelector('.line-item-select').value;
+        const qty = parseFloat(row.querySelector('.line-qty').value) || 0;
+        const rate = parseFloat(row.querySelector('.line-rate').value) || 0;
+        if (itemId && qty > 0) {
+          pickerCart[itemId] = { qty, rate };
+        }
+      });
+
+      document.getElementById('picker-search').value = '';
+      document.getElementById('picker-mode-badge').textContent = docType === 'PURCHASE'
+        ? 'Purchase Bill • Select Items'
+        : 'Sale Invoice • Select Items';
+      renderItemPickerList();
+      document.getElementById('item-picker-modal').classList.remove('hidden');
+    }
+
+    function pickerAddItem(itemId) {
+      const item = appState.items.find(x => x.id === itemId);
+      if (!item) return;
+      const docType = document.getElementById('bill-doc-type').value;
+      const defaultRate = docType === 'PURCHASE'
+        ? (Number(item.purchasePrice) || Number(item.salePrice) || 0)
+        : (Number(item.salePrice) || 0);
+      pickerCart[itemId] = { qty: 1, rate: defaultRate };
+      renderItemPickerList();
+    }
+
+    function pickerChangeQty(itemId, delta) {
+      if (!pickerCart[itemId]) return;
+      const nextQty = Math.round((pickerCart[itemId].qty + delta) * 100) / 100;
+      if (nextQty <= 0) {
+        delete pickerCart[itemId];
+      } else {
+        pickerCart[itemId].qty = nextQty;
+      }
+      renderItemPickerList();
+    }
+
+    function pickerSetQty(itemId, valStr) {
+      const val = parseFloat(valStr);
+      if (isNaN(val) || val <= 0) {
+        delete pickerCart[itemId];
+      } else {
+        pickerCart[itemId].qty = val;
+      }
+      updatePickerBottomSummary();
+    }
+
+    function updatePickerBottomSummary() {
+      const entries = Object.entries(pickerCart);
+      const itemCount = entries.length;
+      const totalAmount = entries.reduce((sum, [id, entry]) => {
+        return sum + ((Number(entry.qty) || 0) * (Number(entry.rate) || 0));
+      }, 0);
+
+      document.getElementById('picker-summary-count').textContent = `${itemCount} ${itemCount === 1 ? 'item' : 'items'}`;
+      document.getElementById('picker-summary-total').textContent = `₹ ${totalAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+    }
+
+    function renderItemPickerList() {
+      const query = (document.getElementById('picker-search')?.value || '').toLowerCase();
+      const container = document.getElementById('picker-items-list');
+      const docType = document.getElementById('bill-doc-type').value;
+      if (!container) return;
+
+      const filtered = appState.items.filter(it =>
+        it.name.toLowerCase().includes(query) ||
+        (it.hsn || '').toLowerCase().includes(query)
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-sm text-slate-400">No items found. Tap "+ Create New Item" above.</div>`;
+        updatePickerBottomSummary();
+        return;
+      }
+
+      container.innerHTML = filtered.map((it, index) => {
+        const unit = it.unit || 'PCS';
+        const stockText = `${Number(it.stock || 0).toFixed(1)}${unit}`;
+        const isLow = Number(it.stock) <= 5;
+        const salePrice = Number(it.salePrice || 0).toLocaleString('en-IN');
+        const purchasePrice = Number(it.purchasePrice || 0).toLocaleString('en-IN');
+        const inCart = pickerCart[it.id];
+
+        // Alternating soft badge tint matching screenshot (greenish / light slate)
+        const badgeStyle = index % 3 === 2
+          ? 'bg-[#e8edf5] text-slate-600'
+          : 'bg-[#e3f1e8] text-slate-600';
+
+        const rightControls = inCart
+          ? `
+            <div class="flex flex-col items-end gap-2 shrink-0">
+              <button type="button" onclick="openItemModal('${it.id}', true)" class="px-4 py-1.5 rounded-lg border border-[#4f39c9]/40 bg-white hover:bg-indigo-50 text-[#4f39c9] font-bold text-xs tracking-wide cursor-pointer">
+                EDIT
+              </button>
+              <div class="inline-flex items-center border border-slate-200 rounded-lg bg-white shadow-2xs overflow-hidden">
+                <button type="button" onclick="pickerChangeQty('${it.id}', -1)" class="px-2.5 py-1.5 text-[#4f39c9] hover:bg-indigo-50 font-bold text-sm cursor-pointer">−</button>
+                <input type="number" step="0.1" min="0" value="${inCart.qty}" onchange="pickerSetQty('${it.id}', this.value)" class="w-11 text-center text-xs font-extrabold text-slate-900 focus:outline-none" />
+                <button type="button" onclick="pickerChangeQty('${it.id}', 1)" class="px-2.5 py-1.5 text-[#4f39c9] hover:bg-indigo-50 font-bold text-sm cursor-pointer">+</button>
+              </div>
+            </div>
+          `
+          : `
+            <div class="shrink-0 pt-1">
+              <button type="button" onclick="pickerAddItem('${it.id}')" class="px-4 py-2 rounded-lg border border-[#4f39c9]/40 bg-white hover:bg-indigo-50 active:scale-95 text-[#4f39c9] font-bold text-xs tracking-wide transition cursor-pointer">
+                ADD +
+              </button>
+            </div>
+          `;
+
+        return `
+          <div class="px-4 py-3.5 bg-white flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-lg ${badgeStyle} font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                1
+              </div>
+              <div class="min-w-0">
+                <h4 class="font-bold text-sm text-slate-900 leading-snug break-words">${it.name}</h4>
+                <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
+                  <span class="${docType === 'SALE' ? 'font-bold text-slate-900' : 'font-semibold text-slate-600'}">Sale: ₹${salePrice}/${unit}</span>
+                  <span class="${docType === 'PURCHASE' ? 'font-bold text-[#4f39c9]' : 'font-semibold text-emerald-700'}">Purchase: ₹${purchasePrice}/${unit}</span>
+                </div>
+                <p class="mt-1.5 text-xs font-medium ${isLow ? 'text-rose-600' : 'text-slate-500'}">Stock: ${stockText}</p>
+              </div>
+            </div>
+            ${rightControls}
+          </div>
+        `;
+      }).join('');
+
+      updatePickerBottomSummary();
+    }
+
+    function applyItemPickerToBill(autoSubmitBill = false) {
+      const entries = Object.entries(pickerCart);
+      if (entries.length === 0) {
+        showToast('Kam se kam 1 item ADD + karein!', 'error');
+        return;
+      }
+
+      const tbody = document.getElementById('bill-items-rows');
+      tbody.innerHTML = '';
+
+      entries.forEach(([itemId, entry]) => {
+        const item = appState.items.find(x => x.id === itemId);
+        if (!item) return;
+        addBillLineRow({
+          itemId: item.id,
+          qty: entry.qty,
+          rate: entry.rate,
+          gst: item.gst ?? 18
+        });
+      });
+
+      recalculateBillTotals();
+      closeModal('item-picker-modal');
+
+      if (autoSubmitBill) {
+        const form = document.getElementById('bill-form');
+        if (form.requestSubmit) {
+          form.requestSubmit();
+        } else {
+          saveBill(new Event('submit'));
+        }
+      }
+    }
+
+    // =========================================================
+    // BILL MODAL & LINE ROWS
+    // =========================================================
     function openBillModal(docType = 'SALE') {
       document.getElementById('bill-doc-type').value = docType;
       onBillTypeChange();
@@ -1313,8 +1549,10 @@
 
       const rowsContainer = document.getElementById('bill-items-rows');
       rowsContainer.innerHTML = '';
-      addBillLineRow();
       document.getElementById('bill-modal').classList.remove('hidden');
+
+      // Open the new full-screen Item Picker directly when creating a bill
+      openItemPickerModal();
     }
 
     function onBillTypeChange() {
@@ -1339,13 +1577,17 @@
       ).join('');
     }
 
-    function addBillLineRow() {
+    function addBillLineRow(prefill = null) {
       const tbody = document.getElementById('bill-items-rows');
       const row = document.createElement('tr');
       row.className = 'bill-line-row';
       const itemOptions = appState.items.map(it =>
-        `<option value="${it.id}">${it.name} (Stock: ${it.stock})</option>`
+        `<option value="${it.id}" ${prefill && prefill.itemId === it.id ? 'selected' : ''}>${it.name} (Stock: ${it.stock} | Pur: ₹${it.purchasePrice || 0})</option>`
       ).join('');
+
+      const qtyVal = prefill ? prefill.qty : 1;
+      const rateVal = prefill ? prefill.rate : 0;
+      const gstVal = prefill ? prefill.gst : 18;
 
       row.innerHTML = `
         <td class="p-2">
@@ -1355,13 +1597,13 @@
           </select>
         </td>
         <td class="p-2">
-          <input type="number" min="0.1" step="0.1" value="1" oninput="recalculateBillTotals()" class="line-qty w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold" />
+          <input type="number" min="0.1" step="0.1" value="${qtyVal}" oninput="recalculateBillTotals()" class="line-qty w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold" />
         </td>
         <td class="p-2">
-          <input type="number" min="0" step="0.01" value="0" oninput="recalculateBillTotals()" class="line-rate w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold" />
+          <input type="number" min="0" step="0.01" value="${rateVal}" oninput="recalculateBillTotals()" class="line-rate w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold" />
         </td>
         <td class="p-2">
-          <input type="number" min="0" max="28" value="18" oninput="recalculateBillTotals()" class="line-gst w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs" />
+          <input type="number" min="0" max="28" value="${gstVal}" oninput="recalculateBillTotals()" class="line-gst w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs" />
         </td>
         <td class="p-2 text-right font-bold text-xs text-slate-900 line-total">₹0.00</td>
         <td class="p-2 text-center">
@@ -1369,6 +1611,7 @@
         </td>
       `;
       tbody.appendChild(row);
+      recalculateBillTotals();
     }
 
     function onLineItemSelect(selectEl) {
@@ -1647,7 +1890,10 @@
       if (!currentPreviewInvoice) return;
       const inv = currentPreviewInvoice;
       const biz = appState.business;
-      const text = `*${biz.name}*\nInvoice: *${inv.number}* (${formatFriendlyDate(inv.date)})\nParty: ${inv.partyName}\nTotal: *${formatINR(inv.grandTotal)}*`;
+      const text = `*${biz.name}*
+Invoice: *${inv.number}* (${formatFriendlyDate(inv.date)})
+Party: ${inv.partyName}
+Total: *${formatINR(inv.grandTotal)}*`;
       const cleanPhone = (inv.partyPhone || '').replace(/\D/g, '');
       const phoneWithCode = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
       window.open(`https://wa.me/${phoneWithCode}?text=${encodeURIComponent(text)}`, '_blank');
