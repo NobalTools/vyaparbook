@@ -1,365 +1,293 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Business & Bill Management System</title>
-<!-- Tailwind CSS for clean and responsive UI -->
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-/* Custom styles for smooth transitions and print layouts */
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-.tab-content { display: none; }
-.tab-content.active { display: block; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#4f39c9" />
+  <title>Nobel Tools — Billing & Inventory App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #invoice-print-modal,
+      #invoice-print-modal * {
+        visibility: visible;
+      }
+      #invoice-print-modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
-​<!-- Top Navigation & Multi-Business Selector -->
-<header class="bg-blue-700 text-white p-4 shadow-md flex flex-wrap justify-between items-center">
-<div class="flex items-center space-x-3">
-<h1 class="text-xl font-bold">📊 BizManager Pro</h1>
-</div>
-<div class="flex items-center space-x-2 mt-2 sm:mt-0">
-<label for="businessSelect" class="text-sm font-medium">बिजनेस चुनें:</label>
-<select id="businessSelect" onchange="switchBusiness()" class="bg-blue-800 text-white text-sm rounded px-3 py-1.5 border border-blue-500 focus:outline-none">
-<option value="biz_1">मुख्य स्टोर (Main Store)</option>
-<option value="biz_2">होलसेल शाखा (Wholesale Branch)</option>
-</select>
-<button onclick="addNewBusiness()" class="bg-green-500 hover:bg-green-600 text-white text-xs px-2.5 py-1.5 rounded font-semibold">+ नया</button>
-</div>
-</header>
-​<!-- Navigation Tabs -->
-<nav class="bg-white shadow-sm flex overflow-x-auto border-b">
-<button onclick="switchTab('scanner')" id="tab-scanner" class="tab-btn px-6 py-3 font-semibold text-blue-600 border-b-2 border-blue-600">📸 बिल स्कैनर (AI)</button>
-<button onclick="switchTab('reports')" id="tab-reports" class="tab-btn px-6 py-3 font-semibold text-gray-600 hover:text-blue-600">📈 रिपोर्ट्स और लेजर</button>
-<button onclick="switchTab('settings')" id="tab-settings" class="tab-btn px-6 py-3 font-semibold text-gray-600 hover:text-blue-600">⚙️ API सेटिंग्स</button>
-</nav>
-​<!-- Main Content Container -->
-<main class="max-w-4xl mx-auto p-4 mt-4">
-​<!-- 1. DOCUMENT AI SCANNER & PREVIEW SECTION -->
-<section id="section-scanner" class="tab-content active bg-white p-6 rounded-lg shadow">
-<h2 class="text-lg font-bold mb-4 border-b pb-2">नया बिल स्कैन करें या अपलोड करें</h2>
-​<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50">
-<input type="file" id="billUpload" accept="image/*,.pdf" class="hidden" onchange="handleFileUpload(event)">
-<label for="billUpload" class="cursor-pointer inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-lg shadow">
-📂 बिल की फोटो या PDF चुनें
-</label>
-<p class="text-xs text-gray-500 mt-2">Document AI ऑटोमैटिक बिल नंबर, तारीख और कुल राशि निकालेगा</p>
-</div>
-​<!-- Loading Indicator -->
-<div id="scanningLoader" class="hidden text-center my-6">
-<div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-<p class="text-sm text-blue-600 font-semibold mt-2">Document AI बिल को प्रोसेस कर रहा है...</p>
-</div>
-​<!-- PREVIEW SCREEN (Verify before saving to Database) -->
-<div id="previewScreen" class="hidden mt-6 bg-yellow-50 border border-yellow-300 p-5 rounded-lg">
-<h3 class="text-md font-bold text-yellow-800 mb-3">🔍 डेटा प्रीव्यू (सेव करने से पहले जांच लें)</h3>
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-<div>
-<label class="block text-xs font-semibold text-gray-600">पार्टी / ग्राहक का नाम</label>
-<input type="text" id="prevPartyName" class="w-full border rounded p-2 mt-1 bg-white">
-</div>
-<div>
-<label class="block text-xs font-semibold text-gray-600">बिल नंबर</label>
-<input type="text" id="prevBillNo" class="w-full border rounded p-2 mt-1 bg-white">
-</div>
-<div>
-<label class="block text-xs font-semibold text-gray-600">तारीख</label>
-<input type="date" id="prevDate" class="w-full border rounded p-2 mt-1 bg-white">
-</div>
-<div>
-<label class="block text-xs font-semibold text-gray-600">कुल राशि (₹)</label>
-<input type="number" id="prevAmount" class="w-full border rounded p-2 mt-1 bg-white font-bold text-green-700">
-</div>
-</div>
-<div class="mt-4">
-<label class="block text-xs font-semibold text-gray-600">आइटम्स का विवरण</label>
-<textarea id="prevItems" rows="2" class="w-full border rounded p-2 mt-1 bg-white text-sm"></textarea>
-</div>
-<div class="mt-4 flex justify-end space-x-3">
-<button onclick="cancelPreview()" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-sm font-semibold">रद्द करें</button>
-<button onclick="saveToDatabase()" class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-bold shadow">✅ Generate & Save (डेटाबेस में सेव करें)</button>
-</div>
-</div>
-</section>
-​<!-- 2. REPORTS & WHATSAPP SHARING SECTION -->
-<section id="section-reports" class="tab-content bg-white p-6 rounded-lg shadow">
-<div class="flex flex-wrap justify-between items-center mb-4 border-b pb-3">
-<h2 class="text-lg font-bold">बिजनेस रिपोर्ट्स और ट्रांजैक्शन</h2>
-<div class="space-x-2 mt-2 sm:mt-0">
-<button onclick="exportCSV()" class="bg-gray-800 hover:bg-gray-900 text-white text-xs px-3 py-2 rounded font-semibold">📥 Excel / CSV डाउनलोड</button>
-<button onclick="shareReportOnWhatsApp()" class="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-2 rounded font-semibold">📲 WhatsApp पर रिपोर्ट भेजें</button>
-</div>
-</div>
-​<!-- Summary Cards -->
-<div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-<div class="bg-blue-50 p-4 rounded border border-blue-200">
-<p class="text-xs text-blue-600 font-semibold">कुल बिल्स</p>
-<p id="statTotalBills" class="text-2xl font-bold text-blue-900">0</p>
-</div>
-<div class="bg-green-50 p-4 rounded border border-green-200">
-<p class="text-xs text-green-600 font-semibold">कुल बिक्री (Total Sales)</p>
-<p id="statTotalAmount" class="text-2xl font-bold text-green-900">₹0</p>
-</div>
-<div class="bg-purple-50 p-4 rounded border border-purple-200 col-span-2 sm:col-span-1">
-<p class="text-xs text-purple-600 font-semibold">सक्रिय बिजनेस</p>
-<p id="statActiveBiz" class="text-md font-bold text-purple-900 mt-1">मुख्य स्टोर</p>
-</div>
-</div>
-​<!-- Bills Table -->
-<div class="overflow-x-auto">
-<table class="w-full text-left border-collapse">
-<thead>
-<tr class="bg-gray-100 border-b text-xs uppercase text-gray-600">
-<th class="p-3">तारीख</th>
-<th class="p-3">बिल नं.</th>
-<th class="p-3">पार्टी का नाम</th>
-<th class="p-3">राशि (₹)</th>
-<th class="p-3 text-right">एक्शन</th>
-</tr>
-</thead>
-<tbody id="reportsTableBody" class="divide-y text-sm">
-<!-- Dynamic rows will be inserted here -->
-</tbody>
-</table>
-</div>
-</section>
-​<!-- 3. API SETTINGS SECTION -->
-<section id="section-settings" class="tab-content bg-white p-6 rounded-lg shadow">
-<h2 class="text-lg font-bold mb-4 border-b pb-2">Google Document AI कॉन्फ़िगरेशन</h2>
-<p class="text-sm text-gray-600 mb-4">सटीक बिल स्कैनिंग के लिए अपनी Google Cloud API Key यहाँ दर्ज करें। यह आपके ब्राउज़र में सुरक्षित रहेगी।</p>
-<div class="max-w-md">
-<label class="block text-xs font-semibold text-gray-700">API Key</label>
-<input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full border rounded p-2 mt-1">
-<button onclick="saveApiKey()" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold">API Key सेव करें</button>
-</div>
-</section>
-​</main>
-​<!-- JAVASCRIPT LOGIC -->
-<script>
-// State Management (Using LocalStorage as Database)
-let currentBusinessId = 'biz_1';
-let businesses = JSON.parse(localStorage.getItem('businesses')) || {
-'biz_1': 'मुख्य स्टोर (Main Store)',
-'biz_2': 'होलसेल शाखा (Wholesale Branch)'
-};
-let billsDatabase = JSON.parse(localStorage.getItem('billsDatabase')) || [];
-let DOCUMENT_AI_API_KEY = localStorage.getItem('DOCUMENT_AI_API_KEY') || '';
-​// Initialize App
-window.onload = () => {
-renderBusinessDropdown();
-renderReports();
-if(DOCUMENT_AI_API_KEY) {
-document.getElementById('apiKeyInput').value = DOCUMENT_AI_API_KEY;
-}
-};
-​// Tab Switching Logic
-function switchTab(tabName) {
-document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-document.querySelectorAll('.tab-btn').forEach(el => {
-el.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
-el.classList.add('text-gray-600');
-});
-​document.getElementById(section-${tabName}).classList.add('active');
-const activeBtn = document.getElementById(tab-${tabName});
-activeBtn.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
-activeBtn.classList.remove('text-gray-600');
-​if(tabName === 'reports') renderReports();
-}
-​// Multi-Business Management
-function renderBusinessDropdown() {
-const select = document.getElementById('businessSelect');
-select.innerHTML = '';
-for (const [id, name] of Object.entries(businesses)) {
-const opt = document.createElement('option');
-opt.value = id;
-opt.textContent = name;
-if (id === currentBusinessId) opt.selected = true;
-select.appendChild(opt);
-}
-document.getElementById('statActiveBiz').textContent = businesses[currentBusinessId];
-}
-​function switchBusiness() {
-currentBusinessId = document.getElementById('businessSelect').value;
-document.getElementById('statActiveBiz').textContent = businesses[currentBusinessId];
-renderReports();
-}
-​function addNewBusiness() {
-const bizName = prompt("नए बिजनेस या शाखा का नाम लिखें:");
-if (bizName && bizName.trim() !== "") {
-const newId = 'biz_' + Date.now();
-businesses[newId] = bizName.trim();
-localStorage.setItem('businesses', JSON.stringify(businesses));
-currentBusinessId = newId;
-renderBusinessDropdown();
-renderReports();
-}
-}
-​// Save API Key
-function saveApiKey() {
-const key = document.getElementById('apiKeyInput').value.trim();
-if(key) {
-DOCUMENT_AI_API_KEY = key;
-localStorage.setItem('DOCUMENT_AI_API_KEY', key);
-alert("API Key सुरक्षित रूप से सेव हो गई है!");
-}
-}
-​// Document AI Processing & Parsing Logic
-async function handleFileUpload(event) {
-const file = event.target.files[0];
-if (!file) return;
-​document.getElementById('scanningLoader').classList.remove('hidden');
-document.getElementById('previewScreen').classList.add('hidden');
-​try {
-// Convert file to Base64 for API transmission
-const base64Data = await toBase64(file);
-​if (DOCUMENT_AI_API_KEY) {
-// Real Document AI / Vision API Call Structure
-const extractedData = await callDocumentAI(base64Data, file.type);
-populatePreview(extractedData);
-} else {
-// Fallback Simulation if API key is not added yet
-setTimeout(() => {
-populatePreview({
-partyName: "राहुल ट्रेडर्स (Sample)",
-billNo: "INV-" + Math.floor(1000 + Math.random() * 9000),
-date: new Date().toISOString().split('T')[0],
-amount: 4550,
-items: "2x सीमेंट बैग, 5x स्टील रॉड"
-});
-}, 1200);
-}
-} catch (error) {
-alert("स्कैनिंग में त्रुटि आई: " + error.message);
-document.getElementById('scanningLoader').classList.add('hidden');
-}
-}
-​async function callDocumentAI(base64Content, mimeType) {
-// Note: Replace endpoint with your specific Google Cloud Document AI Processor URL
-const endpoint = https://documentai.googleapis.com/v1/projects/YOUR_PROJECT_ID/locations/us/processors/YOUR_PROCESSOR_ID:process?key=${DOCUMENT_AI_API_KEY};
-​const response = await fetch(endpoint, {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-rawDocument: {
-content: base64Content.split(',')[1],
-mimeType: mimeType
-}
-})
-});
-​if (!response.ok) throw new Error("API कॉल विफल रही। कृपया अपनी API Key जांचें।");
-const result = await response.json();
-​// Parse entities returned by Document AI
-return parseDocumentEntities(result.document);
-}
-​function parseDocumentEntities(doc) {
-// Extracts standard invoice fields from Document AI response
-let parsed = { partyName: "", billNo: "", date: new Date().toISOString().split('T')[0], amount: 0, items: "" };
-if (doc && doc.entities) {
-doc.entities.forEach(entity => {
-if (entity.type === 'supplier_name') parsed.partyName = entity.mentionText;
-if (entity.type === 'invoice_id') parsed.billNo = entity.mentionText;
-if (entity.type === 'total_amount') parsed.amount = parseFloat(entity.mentionText.replace(/[^0-9.]/g, '')) || 0;
-});
-}
-parsed.items = doc.text ? doc.text.substring(0, 100) + "..." : "";
-return parsed;
-}
-​function populatePreview(data) {
-document.getElementById('scanningLoader').classList.add('hidden');
-document.getElementById('previewScreen').classList.remove('hidden');
-​document.getElementById('prevPartyName').value = data.partyName;
-document.getElementById('prevBillNo').value = data.billNo;
-document.getElementById('prevDate').value = data.date;
-document.getElementById('prevAmount').value = data.amount;
-document.getElementById('prevItems').value = data.items;
-}
-​function cancelPreview() {
-document.getElementById('previewScreen').classList.add('hidden');
-document.getElementById('billUpload').value = '';
-}
-​// Save Verified Data to Main Database
-function saveToDatabase() {
-const newBill = {
-id: Date.now(),
-businessId: currentBusinessId,
-partyName: document.getElementById('prevPartyName').value || "अज्ञात पार्टी",
-billNo: document.getElementById('prevBillNo').value || "N/A",
-date: document.getElementById('prevDate').value,
-amount: parseFloat(document.getElementById('prevAmount').value) || 0,
-items: document.getElementById('prevItems').value
-};
-​billsDatabase.push(newBill);
-localStorage.setItem('billsDatabase', JSON.stringify(billsDatabase));
-​cancelPreview();
-alert("बिल सफलतापूर्वक डेटाबेस में सेव हो गया है!");
-switchTab('reports');
-}
-​// Render Reports Table & Totals
-function renderReports() {
-const tbody = document.getElementById('reportsTableBody');
-tbody.innerHTML = '';
-​const filteredBills = billsDatabase.filter(b => b.businessId === currentBusinessId);
-let totalAmount = 0;
-​if (filteredBills.length === 0) {
-tbody.innerHTML = <tr><td colspan="5" class="p-4 text-center text-gray-500">इस बिजनेस के लिए अभी कोई बिल नहीं है।</td></tr>;
-} else {
-filteredBills.forEach(bill => {
-totalAmount += bill.amount;
-const tr = document.createElement('tr');
-tr.className = "hover:bg-gray-50";
-tr.innerHTML = <td class="p-3">${bill.date}</td> <td class="p-3 font-medium">${bill.billNo}</td> <td class="p-3">${bill.partyName}</td> <td class="p-3 font-bold text-green-700">₹${bill.amount.toLocaleString('en-IN')}</td> <td class="p-3 text-right space-x-2"> <button onclick="shareSingleBillWhatsApp(${bill.id})" class="text-green-600 hover:underline text-xs font-semibold">WhatsApp</button> <button onclick="deleteBill(${bill.id})" class="text-red-500 hover:underline text-xs">हटाएं</button> </td>;
-tbody.appendChild(tr);
-});
-}
-​document.getElementById('statTotalBills').textContent = filteredBills.length;
-document.getElementById('statTotalAmount').textContent = '₹' + totalAmount.toLocaleString('en-IN');
-}
-​function deleteBill(id) {
-if(confirm("क्या आप वाकई इस बिल को हटाना चाहते हैं?")) {
-billsDatabase = billsDatabase.filter(b => b.id !== id);
-localStorage.setItem('billsDatabase', JSON.stringify(billsDatabase));
-renderReports();
-}
-}
-​// WhatsApp Sharing Integration
-function shareSingleBillWhatsApp(id) {
-const bill = billsDatabase.find(b => b.id === id);
-if (!bill) return;
-const bizName = businesses[bill.businessId];
-const text = *${bizName} - बिल विवरण*\n\nपार्टी: ${bill.partyName}\nबिल नं.: ${bill.billNo}\nतारीख: ${bill.date}\nकुल राशि: *₹${bill.amount}*\nविवरण: ${bill.items};
-window.open(https://wa.me/?text=${encodeURIComponent(text)}, '_blank');
-}
-​function shareReportOnWhatsApp() {
-const filteredBills = billsDatabase.filter(b => b.businessId === currentBusinessId);
-const total = filteredBills.reduce((sum, b) => sum + b.amount, 0);
-const bizName = businesses[currentBusinessId];
-​const text = *📊 ${bizName} - बिजनेस रिपोर्ट*\n\nकुल बिल्स: ${filteredBills.length}\nकुल बिक्री: *₹${total.toLocaleString('en-IN')}*\nतारीख: ${new Date().toLocaleDateString('hi-IN')};
-window.open(https://wa.me/?text=${encodeURIComponent(text)}, '_blank');
-}
-​// Export to CSV / Excel
-function exportCSV() {
-const filteredBills = billsDatabase.filter(b => b.businessId === currentBusinessId);
-if (filteredBills.length === 0) return alert("डाउनलोड करने के लिए कोई डेटा नहीं है।");
-​let csvContent = "data:text/csv;charset=utf-8,Date,Bill No,Party Name,Amount,Items\n";
-filteredBills.forEach(b => {
-csvContent += ${b.date},${b.billNo},"${b.partyName}",${b.amount},"${b.items.replace(/"/g, '""')}"\n;
-});
-​const encodedUri = encodeURI(csvContent);
-const link = document.createElement("a");
-link.setAttribute("href", encodedUri);
-link.setAttribute("download", ${businesses[currentBusinessId]}_Report.csv);
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
-}
-​// Helper: File to Base64
-const toBase64 = file => new Promise((resolve, reject) => {
-const reader = new FileReader();
-reader.readAsDataURL(file);
-reader.onload = () => resolve(reader.result);
-reader.onerror = error => reject(error);
-});
-</script>
+<body class="min-h-screen flex flex-col md:flex-row overflow-x-hidden bg-slate-50">
+
+  <div id="toast-container" class="fixed top-4 right-4 z-[120] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 md:px-0"></div>
+
+  <!-- DESKTOP SIDEBAR NAVIGATION -->
+  <aside class="hidden md:flex md:w-64 lg:w-72 bg-slate-900 text-white flex-col shrink-0 min-h-screen sticky top-0 h-screen select-none z-20">
+    <div class="p-5 border-b border-slate-800 flex items-center gap-3">
+      <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shrink-0 p-2">
+        <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+          <rect x="6" y="4" width="24" height="28" rx="4" fill="white" fill-opacity="0.18" stroke="white" stroke-width="2.2"/>
+          <path d="M12 12H24M12 18H20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="24" cy="25" r="5" fill="#34d399"/>
+          <path d="M22 25L23.5 26.5L26.5 23.5" stroke="#064e3b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="min-w-0">
+        <h1 id="sidebar-biz-name" class="font-bold text-base truncate">Nobel Tools</h1>
+        <p id="sidebar-biz-gst" class="text-xs text-slate-400 truncate">GSTIN: 24AABCN1429B1Z5</p>
+      </div>
+    </div>
+
+    <div class="p-4 space-y-2 border-b border-slate-800">
+      <button type="button" onclick="openBillModal('SALE')" class="w-full py-2.5 px-4 bg-[#4f39c9] hover:bg-[#412db5] active:scale-[0.99] text-white font-semibold rounded-xl shadow-md flex items-center justify-center gap-2 transition cursor-pointer">
+        <span>+ Bill / Invoice</span>
+      </button>
+      <button type="button" onclick="openBillModal('PURCHASE')" class="w-full py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs rounded-xl border border-slate-700 flex items-center justify-center gap-1.5 transition cursor-pointer">
+        <span>+ Purchase Bill</span>
+      </button>
+    </div>
+
+    <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+      <button type="button" onclick="switchTab('scanner')" data-nav="scanner" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-left bg-indigo-600/15 text-indigo-300 border border-indigo-500/30 cursor-pointer">
+        <span>Bill Scanner (AI)</span>
+      </button>
+      <button type="button" onclick="switchTab('dashboard')" data-nav="dashboard" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/70 transition text-left cursor-pointer">
+        <span>Dashboard</span>
+      </button>
+      <button type="button" onclick="switchTab('parties')" data-nav="parties" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/70 transition text-left cursor-pointer">
+        <span>Parties</span>
+      </button>
+      <button type="button" onclick="switchTab('items')" data-nav="items" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/70 transition text-left cursor-pointer">
+        <span>Items</span>
+      </button>
+      <button type="button" onclick="switchTab('foryou')" data-nav="foryou" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/70 transition text-left cursor-pointer">
+        <span>For You</span>
+      </button>
+      <button type="button" onclick="switchTab('more')" data-nav="more" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/70 transition text-left cursor-pointer">
+        <span>More</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- MOBILE TOP HEADER -->
+  <header class="md:hidden sticky top-0 z-30 bg-white text-slate-900 px-4 py-3 flex items-center justify-between border-b border-slate-200/80">
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="w-10 h-10 rounded-full border-2 border-indigo-700 bg-indigo-50 flex items-center justify-center shrink-0 p-1.5">
+        <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+          <path d="M12 7L15 10L18 6L21 10L24 7L22.5 12H13.5L12 7Z" fill="#4338ca"/>
+          <circle cx="18" cy="21" r="8" fill="#4338ca"/>
+          <text x="18" y="23.8" text-anchor="middle" fill="#ffffff" font-size="7.5" font-weight="800">NT</text>
+        </svg>
+      </div>
+      <div class="min-w-0">
+        <h1 id="mobile-biz-name" class="font-bold text-lg text-slate-900 truncate leading-tight">Nobel Tools</h1>
+      </div>
+    </div>
+    <button type="button" onclick="switchTab('more')" aria-label="Open More Options" class="p-2 text-slate-700 hover:bg-slate-100 rounded-full cursor-pointer">
+      <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="5" r="1.9" fill="currentColor"/>
+        <circle cx="12" cy="12" r="1.9" fill="currentColor"/>
+        <circle cx="12" cy="19" r="1.9" fill="currentColor"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-1 min-w-0 p-4 md:p-6 lg:p-8 max-w-5xl mx-auto w-full pb-44 md:pb-12">
+    
+    <!-- TAB 0: AI BILL SCANNER -->
+    <section id="tab-scanner" class="tab-section space-y-4">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs">
+        <h2 class="text-lg font-bold text-slate-900">AI Bill Scanner</h2>
+        <p class="text-xs text-slate-500">Upload a bill to extract details automatically</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 text-center space-y-4">
+        <div class="border-2 border-dashed border-indigo-200 rounded-xl p-8">
+          <input type="file" id="ai-file-input" accept="image/*,application/pdf" class="hidden" onchange="handleAiFileUpload(event)">
+          <button type="button" onclick="document.getElementById('ai-file-input').click()" class="px-6 py-3 bg-[#4f39c9] text-white font-bold rounded-xl cursor-pointer">
+            Select Bill Photo or PDF
+          </button>
+          <p class="text-xs text-slate-400 mt-2">Document AI will extract bill number, date, and total amount.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: DASHBOARD -->
+    <section id="tab-dashboard" class="tab-section hidden space-y-4">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-2xs">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="min-w-0">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Nobel Tools Dashboard</p>
+            <p id="dash-biz-subtitle" class="text-sm font-bold text-slate-900 truncate">Billing & Inventory Overview</p>
+          </div>
+        </div>
+      </div>
+      <!-- Summary Metrics -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-[#eefaf1] border border-[#b7e4c7] p-4 rounded-xl">
+          <p id="stat-to-collect" class="text-lg font-extrabold text-slate-900">₹ 5.81 L</p>
+          <p class="text-xs font-semibold text-[#15803d]">To Collect</p>
+        </div>
+        <div class="bg-[#fdf2f2] border border-[#f5c2c7] p-4 rounded-xl">
+          <p id="stat-to-pay" class="text-lg font-extrabold text-slate-900">₹ 47.26 L</p>
+          <p class="text-xs font-semibold text-[#dc2626]">To Pay</p>
+        </div>
+      </div>
+      <div id="dashboard-recent-list" class="space-y-3"></div>
+    </section>
+
+    <!-- TAB 2: PARTIES -->
+    <section id="tab-parties" class="tab-section hidden space-y-4">
+      <div class="bg-white p-3 rounded-2xl border border-slate-200/80 flex gap-2">
+        <input id="party-search" oninput="renderParties()" type="text" placeholder="Search party..." class="flex-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" />
+      </div>
+      <div id="parties-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+    </section>
+
+    <!-- TAB 3: ITEMS -->
+    <section id="tab-items" class="tab-section hidden space-y-4">
+      <div id="items-cards-list" class="space-y-3"></div>
+    </section>
+
+    <!-- TAB 4: FOR YOU -->
+    <section id="tab-foryou" class="tab-section hidden space-y-4">
+      <div id="invoices-list" class="space-y-3"></div>
+    </section>
+
+    <!-- TAB 5: MORE -->
+    <section id="tab-more" class="tab-section hidden space-y-5">
+      <form onsubmit="saveBusinessSettings(event)" class="bg-white p-5 rounded-2xl border border-slate-200/80 space-y-4">
+        <h3 class="font-bold text-base">Firm Details</h3>
+        <div>
+          <label>Business Name</label>
+          <input id="set-name" type="text" required class="w-full p-2 border border-slate-200 rounded-xl" />
+        </div>
+        <button type="submit" class="px-5 py-2.5 bg-[#4f39c9] text-white font-semibold rounded-xl">Save Settings</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- MODAL: AI PREVIEW -->
+  <div id="ai-preview-modal" class="fixed inset-0 z-50 hidden bg-slate-900/80 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-2xl p-6 space-y-4">
+      <h3 class="font-bold text-lg">AI Extracted Details</h3>
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs text-slate-500">Bill Number</label>
+          <input id="ai-modal-number" type="text" class="w-full p-2 border border-slate-200 rounded-xl font-bold" />
+        </div>
+        <div>
+          <label class="text-xs text-slate-500">Date</label>
+          <input id="ai-modal-date" type="text" class="w-full p-2 border border-slate-200 rounded-xl" />
+        </div>
+        <div>
+          <label class="text-xs text-slate-500">Total Amount</label>
+          <input id="ai-modal-total" type="text" class="w-full p-2 border border-slate-200 rounded-xl font-extrabold text-indigo-600" />
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 pt-4">
+        <button type="button" onclick="closeModal('ai-preview-modal')" class="px-4 py-2 bg-slate-100 rounded-xl">Cancel</button>
+        <button type="button" onclick="confirmAiData()" class="px-4 py-2 bg-[#4f39c9] text-white font-bold rounded-xl">Confirm & Save</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 px-1 py-1.5 flex items-center justify-around">
+    <button type="button" onclick="switchTab('scanner')" data-mnav="scanner" class="mnav-btn flex flex-col items-center p-1 text-[#4f39c9]">
+      <span>📸</span><span class="text-[10px]">Scanner</span>
+    </button>
+    <button type="button" onclick="switchTab('dashboard')" data-mnav="dashboard" class="mnav-btn flex flex-col items-center p-1 text-slate-500">
+      <span>⌂</span><span class="text-[10px]">Dashboard</span>
+    </button>
+    <button type="button" onclick="switchTab('parties')" data-mnav="parties" class="mnav-btn flex flex-col items-center p-1 text-slate-500">
+      <span>☺</span><span class="text-[10px]">Parties</span>
+    </button>
+    <button type="button" onclick="switchTab('items')" data-mnav="items" class="mnav-btn flex flex-col items-center p-1 text-slate-500">
+      <span>▦</span><span class="text-[10px]">Items</span>
+    </button>
+    <button type="button" onclick="switchTab('foryou')" data-mnav="foryou" class="mnav-btn flex flex-col items-center p-1 text-slate-500">
+      <span>✦</span><span class="text-[10px]">For You</span>
+    </button>
+  </nav>
+
+  <script>
+    const STORAGE_KEY = 'nobel_tools_billing_v1';
+    let appState = {
+      business: { name: 'Nobel Tools', phone: '', gstin: '', address: '' },
+      parties: [], items: [], invoices: []
+    };
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
+      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function handleAiFileUpload(e) {
+      setTimeout(() => {
+        document.getElementById('ai-modal-number').value = 'BILL-2026-001';
+        document.getElementById('ai-modal-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('ai-modal-total').value = '1500';
+        document.getElementById('ai-preview-modal').classList.remove('hidden');
+      }, 500);
+    }
+
+    function confirmAiData() {
+      const number = document.getElementById('ai-modal-number').value;
+      const amount = document.getElementById('ai-modal-total').value;
+      alert('AI Data confirmed for ' + number);
+      closeModal('ai-preview-modal');
+      switchTab('dashboard');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      switchTab('scanner');
+    });
+  </script>
 </body>
 </html>
