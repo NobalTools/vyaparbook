@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3194,26 +3193,40 @@
             .replace(/sm:border-r/g, 'border-r')
             .replace(/sm:text-right/g, 'text-right');
 
+          // html2canvas measures a 0px-tall box for position:fixed/absolute nodes,
+          // which produced an empty (blank) PDF. Keep the host and the captured
+          // node in normal flow and shove the host off-screen instead.
+          const a4Host = document.createElement('div');
+          a4Host.style.cssText = 'position:static;margin-left:-12000px;width:760px;background:#ffffff;padding:20px;';
           const a4Wrap = document.createElement('div');
-          a4Wrap.style.cssText = 'position:fixed;left:0;top:0;width:760px;background:#ffffff;padding:20px;z-index:9999;';
+          a4Wrap.style.cssText = 'position:static;width:760px;background:#ffffff;';
           a4Wrap.innerHTML = rawInvoiceHtml;
-          document.body.appendChild(a4Wrap);
+          a4Host.appendChild(a4Wrap);
+          // html2canvas crops from the current scroll offset, so park the page at the
+          // top and put the sheet first in the document for the duration of the capture.
+          const prevScrollY = window.scrollY;
+          window.scrollTo(0, 0);
+          document.body.insertBefore(a4Host, document.body.firstChild);
 
+          // html2pdf clamps the capture to the page area, so keep the PDF margin at 0
+          // and let the 20px padding on the host act as the printed margin.
           const opt = {
-            margin: [8, 8, 8, 8],
+            margin: 0,
             filename,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 760, windowWidth: 1024, scrollX: 0, scrollY: 0, x: 0, y: 0 },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
           };
 
           html2pdf().set(opt).from(a4Wrap).save().then(() => {
-            a4Wrap.remove();
+            a4Host.remove();
+            window.scrollTo(0, prevScrollY);
             btn.disabled = false;
             btn.textContent = 'Download PDF';
             showToast(`Downloaded ${filename}!`);
           }).catch(() => {
-            a4Wrap.remove();
+            a4Host.remove();
+            window.scrollTo(0, prevScrollY);
             btn.disabled = false;
             btn.textContent = 'Download PDF';
             showToast('PDF generation failed; opening print dialog...', 'warning');
@@ -3562,14 +3575,43 @@
         const ds = getActiveReportDataset();
         const filename = ds.baseName + '.pdf';
         if (typeof html2pdf !== 'undefined') {
+          // Same blank-page pitfalls as the invoice PDF: a fixed/absolute capture node
+          // measures 0px tall and a non-zero pdf margin crops the page. Clone the report
+          // into a static off-screen host at landscape-A4 width and keep margin at 0.
+          const reportHost = document.createElement('div');
+          reportHost.style.cssText = 'position:static;margin-left:-12000px;width:1080px;background:#ffffff;padding:20px;';
+          const reportWrap = el.cloneNode(true);
+          reportWrap.classList.remove('overflow-x-auto');
+          reportWrap.style.cssText = 'position:static;width:1080px;overflow:visible;background:#ffffff;border:0;box-shadow:none;border-radius:0;';
+          // html2canvas paints the second header row on top of row-spanning header
+          // cells and clips their labels, so drop that row's background for the capture.
+          reportWrap.querySelectorAll('thead tr:nth-child(2), thead tr:nth-child(2) th').forEach(node => {
+            node.style.backgroundColor = 'transparent';
+          });
+          reportHost.appendChild(reportWrap);
+
+          const prevScrollY = window.scrollY;
+          window.scrollTo(0, 0);
+          document.body.insertBefore(reportHost, document.body.firstChild);
+
           html2pdf().set({
-            margin: 8,
+            margin: 0,
             filename,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1024 },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-          }).from(el).save().then(() => showToast(`Downloaded ${filename}!`));
+          }).from(reportWrap).save().then(() => {
+            reportHost.remove();
+            window.scrollTo(0, prevScrollY);
+            showToast(`Downloaded ${filename}!`);
+          }).catch(() => {
+            reportHost.remove();
+            window.scrollTo(0, prevScrollY);
+            showToast('PDF generation failed; opening print dialog...', 'warning');
+            try { window.print(); } catch (e) {}
+          });
         } else {
+          showToast('Opening print dialog to save PDF...', 'warning');
           try { window.print(); } catch (e) {}
         }
       });
@@ -3705,4 +3747,3 @@
   </script>
 </body>
 </html>
-```
